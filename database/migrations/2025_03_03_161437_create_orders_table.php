@@ -20,13 +20,11 @@ return new class extends Migration
             ->index();
             $table->foreign('customer_id', 'fk_order_customer_id')
             ->references('id')
-            ->on('customers')
-            ->onDelete('cascade');
+            ->on('customers');
             $table->unsignedBigInteger('user_id')->index();
             $table->foreign('user_id', 'fk_order_user_id')
             ->references('id')
-            ->on('users')
-            ->onDelete('cascade');
+            ->on('users');
             $table->enum('type', ['delivery', 'pickup', 'dining'])->default('dining');
             $table->string('table_number')->nullable();
             $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');

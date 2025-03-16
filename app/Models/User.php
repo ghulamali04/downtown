@@ -20,6 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name',
         'last_name',
+        'role',
         'email',
         'password',
     ];
@@ -30,7 +31,6 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'role',
         'password',
         'remember_token',
     ];
@@ -46,5 +46,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }

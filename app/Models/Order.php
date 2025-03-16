@@ -16,6 +16,28 @@ class Order extends Model
         'type',
         'table_number',
         'status',
+        'payment_status',
         'instructions'
     ];
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function getTotalPriceAttribute()
+    {
+        return $this->items()->sum('price');
+    }
+
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

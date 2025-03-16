@@ -13,6 +13,13 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'name',
-        'price'
+        'price',
+        'menu_item_id',
+        'qty'
     ];
+
+    public function menu()
+    {
+        return $this->hasOne(MenuItem::class);
+    }
 }
