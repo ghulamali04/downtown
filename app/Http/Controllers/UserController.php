@@ -9,13 +9,15 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\DataTables;
 
 class UserController extends Controller
 {
     public function get_data(DataTables $dataTables)
     {
-        $users = User::where('role', '!=', 'superadmin');
+        $users = User::where('role', '!=', 'superadmin')
+        ->where('id', '!=', Auth::user()->id);
         return $dataTables
         ->eloquent($users)
         ->addColumn('timestamp', function ($user) {

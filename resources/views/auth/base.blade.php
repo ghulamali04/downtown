@@ -10,7 +10,7 @@
     <meta content="Downtown" name="description" />
     <meta content="Bitzsol" name="author" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{asset('/')}}assets/images/favicon.ico">
+    <link rel="shortcut icon" href="{{asset('/')}}logo.svg">
 
     <!-- Layout config Js -->
     <script src="{{asset('/')}}assets/js/layout.js"></script>

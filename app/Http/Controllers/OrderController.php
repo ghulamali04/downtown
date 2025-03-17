@@ -8,16 +8,22 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Process;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\View;
+use Mike42\Escpos\PrintConnectors\CupsPrintConnector;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use Mike42\Escpos\Printer;
 
 class OrderController extends Controller
 {
     public function get_latest_pending_orders(DataTables $dataTables)
     {
         $items = Order::with(['customer', 'user'])
-        ->where('status', 'pending')
-        ->orderBy('id', 'desc');
+            ->where('status', 'pending')
+            ->orderBy('id', 'desc');
         return $dataTables->eloquent($items)
             ->addColumn('timestamp', function ($item) {
                 return date("d/m/Y H:iA", strtotime($item->created_at));
@@ -35,21 +41,21 @@ class OrderController extends Controller
         $status = $request->get('status');
 
         $items = Order::with(['customer', 'user'])
-        ->where(function ($qry) use ($start_date, $end_date, $type, $status) {
-            if(!empty($start_date)) {
-                $qry->where('created_at', '>=', date("Y-m-d", strtotime($start_date)));
-            }
-            if(!empty($end_date)) {
-                $qry->where('created_at', '<=', date("Y-m-d", strtotime($end_date)));
-            }
-            if(!empty($type)) {
-                $qry->whre('type', $type);
-            }
-            if(!empty($status)) {
-                $qry->where('status', $status);
-            }
-        })
-        ->orderBy('id', 'desc');
+            ->where(function ($qry) use ($start_date, $end_date, $type, $status) {
+                if (!empty($start_date)) {
+                    $qry->where('created_at', '>=', date("Y-m-d", strtotime($start_date)));
+                }
+                if (!empty($end_date)) {
+                    $qry->where('created_at', '<=', date("Y-m-d", strtotime($end_date)));
+                }
+                if (!empty($type)) {
+                    $qry->whre('type', $type);
+                }
+                if (!empty($status)) {
+                    $qry->where('status', $status);
+                }
+            })
+            ->orderBy('id', 'desc');
         return $dataTables->eloquent($items)
             ->addColumn('timestamp', function ($item) {
                 return date("d/m/Y H:iA", strtotime($item->created_at));
@@ -84,7 +90,7 @@ class OrderController extends Controller
             'menuItems.*.item' => 'required'
         ])->validate();
         $order = Order::create([
-            'customer_id' => $request->input('customer_id'),
+            'customer_id' => $request->input('customer'),
             'user_id' => Auth::user()->id,
             'type' => $request->input('type'),
             'table_number' => $request->input('table_number'),
@@ -114,7 +120,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($order);
 
         $order->forceFill([
-            'customer_id' => $request->input('customer_id'),
+            'customer_id' => $request->input('customer'),
             'type' => $request->input('type'),
             'table_number' => $request->input('table_number'),
             'instructions' => $request->input('instructions')
@@ -145,17 +151,41 @@ class OrderController extends Controller
     }
     public function receipt($order)
     {
+        $printers = $this->getAvailablePrinters();
         $order = Order::with('items', 'customer', 'user')->where('id', $order)->first();
-        return view("orders.receipt", compact("order"));
+        return view("orders.receipt", compact("order", "printers"));
     }
+    private function getAvailablePrinters()
+    {
+        $result = Process::run('lpstat -p | grep printer');
+
+        if ($result->successful()) {
+            $output = $result->output();
+            $printers = [];
+
+            $lines = explode("\n", $output);
+            foreach ($lines as $line) {
+                if (empty($line)) continue;
+
+                if (preg_match('/printer (.*?) is/', $line, $matches)) {
+                    $printers[] = $matches[1];
+                }
+            }
+
+            return $printers;
+        }
+
+        return [];
+    }
+
     public function update_status(Order $order, $status)
     {
         $return = redirect();
-        if($status === "completed" || $status === "cancelled") {
+        if ($status === "completed" || $status === "cancelled") {
             $order->update([
                 "status" => $status
             ]);
-            if($status === "completed") {
+            if ($status === "completed") {
                 $order->update([
                     "payment_status" => "paid"
                 ]);
@@ -165,5 +195,102 @@ class OrderController extends Controller
             }
         }
         return $return->with('success', 'Order status successfully updated');
+    }
+
+    public function printTestPage(Request $request, $order)
+    {
+        $request->validate([
+            'printer' => 'required|string',
+        ]);
+
+        $order = Order::with('items', 'customer', 'user')->where('id', $order)->first();
+
+        $printerName = $request->input('printer');
+        $printer = null;
+
+        try {
+
+            $connector = new CupsPrintConnector($printerName);
+            $printer = new Printer($connector);
+
+            $printer->initialize();
+            $printer->text(" \n");
+            $printer->feed(2);
+            $printer->cut(Printer::CUT_PARTIAL);
+
+            $printer->initialize();
+            $printer->feed(5);
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setEmphasis(true);
+            $printer->text("DOWNTOWN\n");
+            $printer->setEmphasis(false);
+            $printer->feed(1);
+            $printer->text("Jail Road, Mall of Bahawalnagar\n");
+            $printer->feed(1);
+            $printer->text("Tel: (063) 2280-988\n");
+            $printer->feed(1);
+            $printer->text("Date: " . now()->format('F j, Y g:i A') . " \n");
+            $printer->feed(1);
+            $printer->text("-------------------\n");
+
+            $printer->feed(1);
+
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+
+            $total = 0;
+            foreach ($order->items as $item) {
+                $itemTotal = $item->price * $item->qty;
+
+                $printer->text($item->name . "\n");
+
+                $lineWidth = 42;
+                $qtyText = "QTY: " . $item->qty;
+                $priceText = "PKR " . number_format($itemTotal, 2);
+
+                $spacesNeeded = $lineWidth - strlen($qtyText) - strlen($priceText);
+                $spaces = str_repeat(" ", max(1, $spacesNeeded));
+
+                $printer->text($qtyText . $spaces . $priceText . "\n");
+                $printer->feed();
+
+                $total += $itemTotal;
+            }
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text("------------------\n");
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+
+            $lineWidth = 42;
+            $totalText = "TOTAL:";
+            $totalValue = "PKR " . number_format($total, 2);
+            $spacesNeeded = $lineWidth - strlen($totalText) - strlen($totalValue);
+            $spaces = str_repeat(" ", max(1, $spacesNeeded));
+
+            $printer->setEmphasis(true);
+            $printer->text($totalText . $spaces . $totalValue . "\n");
+            $printer->setEmphasis(false);
+
+            $printer->feed(1);
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text("Thank you for your purchase!\n");
+            $printer->text("Please come again\n");
+
+            $printer->feed(3);
+            $printer->cut();
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to print test page',
+                'error' => $e->getMessage(),
+            ], 500);
+        } finally {
+            if (isset($printer)) {
+                $printer->close();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Test page sent to printer successfully ',
+        ]);
     }
 }

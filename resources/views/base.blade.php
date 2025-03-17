@@ -6,10 +6,10 @@
     <meta charset="utf-8" />
     <title>Dashboard | Downtown</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
-    <meta content="Themesbrand" name="author" />
+    <meta content="Downtown" name="description" />
+    <meta content="Bitzsol" name="author" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{asset('/')}}assets/images/favicon.ico">
+    <link rel="shortcut icon" href="{{asset('/')}}logo.svg">
 
     <!-- jsvectormap css -->
     <link href="{{asset('/')}}assets/libs/jsvectormap/css/jsvectormap.min.css" rel="stylesheet" type="text/css" />
@@ -58,7 +58,7 @@
                             <h3 class="text-white mb-0">DT</h3>
                         </span>
                         <span class="logo-lg">
-                            <h2 class="text-primary my-3">DownTown</h2>
+                            <img src="{{asset('logo-simple.png')}}" height="65">
                         </span>
                     </a>
 
@@ -67,7 +67,7 @@
                             <h3 class="text-primary mb-0">DT</h3>
                         </span>
                         <span class="logo-lg">
-                            <h2 class="text-primary my-3">DownTown</h2>
+                            <img src="{{asset('logo-simple.png')}}" height="65">
                         </span>
                     </a>
                 </div>
@@ -130,7 +130,7 @@
                         <h3 class="mb-0 text-white">DT</h3>
                     </span>
                     <span class="logo-lg">
-                        <h2 class="my-3 text-white">DownTown</h2>
+                        <img src="{{asset('logo-simple.png')}}" height="65">
                     </span>
                 </a>
                 <!-- Light Logo-->
@@ -139,7 +139,7 @@
                         <h3 class="mb-0 text-primary">DT</h3>
                     </span>
                     <span class="logo-lg">
-                        <h2 class="my-3 text-primary">DownTown</h2>
+                        <img src="{{asset('logo-simple.png')}}" height="65">
                     </span>
                 </a>
                 <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
@@ -156,34 +156,68 @@
                         <li class="menu-title"><span data-key="t-app">App</span></li>
 
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{route('home')}}">
+                            <a class="nav-link menu-link {{Request::is('') || Request::is('dashboard') ? 'active' : ''}}" href="{{route('home')}}">
                                 <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboard">Dashboard</span>
                             </a>
                         </li>
 
+                        @if (Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{route('user.index')}}">
+                            <a class="nav-link menu-link {{Request::is('user/*') || Request::is('user') ? 'active' : ''}}" href="{{route('user.index')}}">
                                 <i class="ri-account-circle-line"></i> <span data-key="t-users">Users</span>
                             </a>
                         </li>
+                        @endif
 
+                        @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin' || Auth::user()->role === 'staff' || Auth::user()->role === 'reception')
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{route('customer.index')}}">
+                            <a class="nav-link menu-link {{Request::is('customer/*') || Request::is('customer') ? 'active' : ''}}" href="{{route('customer.index')}}">
                                 <i class="ri-account-circle-line"></i> <span data-key="t-customers">Customers</span>
                             </a>
                         </li>
+                        @endif
 
+                        @if (Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{route('menu.index')}}">
+                            <a class="nav-link menu-link {{Request::is('menu/*') || Request::is('menu') ? 'active' : ''}}" href="{{route('menu.index')}}">
                                 <i class="ri-function-line"></i> <span data-key="t-menu-items">Menu</span>
                             </a>
                         </li>
+                        @endif
 
+                        @if (Auth::user()->role === 'staff')
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{route('order.index')}}">
+                            <a class="nav-link menu-link {{Request::is('order/create') ? 'active' : ''}}" href="{{route('order.create')}}">
+                                <i class="ri-rocket-line"></i> <span data-key="t-orders">Create Order</span>
+                            </a>
+                        </li>
+                        @endif
+
+                        @if( Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin' || Auth::user()->role === 'staff' || Auth::user()->role === 'reception')
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{Request::is('order/*') || Request::is('order') ? 'active' : ''}}" href="{{route('order.index')}}">
                                 <i class="ri-rocket-line"></i> <span data-key="t-orders">Orders</span>
                             </a>
                         </li>
+                        @endif
+
+                        @if (Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{Request::is('inventory/*') ? 'active' : ''}}" href="#sidebarDashboards" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarDashboards">
+                                <i class="ri-store-line"></i> <span data-key="t-dashboards">Inventory</span>
+                            </a>
+                            <div class="collapse menu-dropdown {{Request::is('inventory/*') ? 'show' : ''}}" id="sidebarDashboards">
+                                <ul class="nav nav-sm flex-column">
+                                    <li class="nav-item">
+                                        <a href="{{route('item.index')}}" class="nav-link {{Request::is('inventory/item/*') || Request::is('inventory/item') ? 'active' : ''}}" data-key="t-inventory-items"> Items </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{route('tracking.index')}}" class="nav-link {{Request::is('inventory/tracking/*') || Request::is('inventory/tracking') ? 'active' : ''}}" data-key="t-records"> Records </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        @endif
 
                     </ul>
                 </div>

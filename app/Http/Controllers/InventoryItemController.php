@@ -4,15 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\InventoryItem;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 
 class InventoryItemController extends Controller
 {
+    public function get_data(DataTables $dataTables)
+    {
+        $items = InventoryItem::orderBy('id', 'desc');
+        return $dataTables->eloquent($items)
+        ->addColumn('timestamp', function ($item) {
+            return date("d/m/Y H:iA", strtotime($item->created_at));
+        })
+        ->addColumn('action', function ($item) {
+            return $item->id;
+        })
+        ->toJson();
+    }
     public function index()
     {
-        $items = InventoryItem::orderBy('name')->get();
-
-        return view('inventory.items.index', compact('items'));
+        return view('inventory.items.index');
     }
 
     public function create()
@@ -31,7 +43,7 @@ class InventoryItemController extends Controller
 
         InventoryItem::create($validated);
 
-        return redirect()->route('inventory.items.index')
+        return redirect()->route('item.index')
             ->with('success', 'Inventory item created successfully.');
     }
 
@@ -58,7 +70,7 @@ class InventoryItemController extends Controller
 
         $item->update($validated);
 
-        return redirect()->route('inventory.items.index')
+        return redirect()->route('item.index')
             ->with('success', 'Inventory item updated successfully.');
     }
 
@@ -66,8 +78,10 @@ class InventoryItemController extends Controller
     {
         $item->delete();
 
-        return redirect()->route('inventory.items.index')
-            ->with('success', 'Inventory item deleted successfully.');
+        return new JsonResponse([
+            "status" => "success",
+            "message" => "Inventory successfully deleted"
+        ], 200);
     }
 
     public function dailyReport(Request $request, InventoryItem $item)

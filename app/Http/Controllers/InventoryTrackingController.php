@@ -4,36 +4,47 @@ namespace App\Http\Controllers;
 
 use App\Models\InventoryItem;
 use App\Models\InventoryTracking;
+use Illuminate\Http\JsonResponse;
+use Yajra\DataTables\DataTables;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class InventoryTrackingController extends Controller
 {
-
-    public function index(Request $request)
+    public function get_data(DataTables $dataTables, Request $request)
     {
         $query = InventoryTracking::with('inventoryItem', 'user');
 
-        // Filter by item if provided
         if ($request->has('item_id')) {
             $query->where('inventory_item_id', $request->item_id);
         }
 
-        // Filter by type if provided
         if ($request->has('type') && in_array($request->type, ['purchase', 'used', 'wasted', 'returned'])) {
             $query->where('type', $request->type);
         }
 
-        // Filter by date range if provided
+        if($request->has('date')) {
+            $query->where('date', '<=', date("Y-m-d", strtotime($request->date)));
+        }
+
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->whereBetween('date', [$request->start_date, $request->end_date]);
         }
 
-        $trackings = $query->orderBy('date', 'desc')->paginate(15);
-        $items = InventoryItem::orderBy('name')->get();
-
-        return view('inventory.trackings.index', compact('trackings', 'items'));
+        $trackings = $query->orderBy('date', 'desc');
+        return $dataTables->eloquent($trackings)
+            ->addColumn('timestamp', function ($tracking) {
+                return date("d/m/Y H:iA", strtotime($tracking->created_at));
+            })
+            ->addColumn('action', function ($tracking) {
+                return $tracking->id;
+            })
+            ->toJson();
+    }
+    public function index()
+    {
+        return view('inventory.trackings.index');
     }
 
     public function create()
@@ -41,6 +52,133 @@ class InventoryTrackingController extends Controller
         $items = InventoryItem::orderBy('name')->get();
 
         return view('inventory.trackings.create', compact('items'));
+    }
+
+    public function update(Request $request, InventoryTracking $tracking)
+    {
+        abort(403);
+        $validated = $request->validate([
+            'inventory_item_id' => 'required|exists:inventory_items,id',
+            'date' => 'required|date',
+            'description' => 'nullable|string',
+            'type' => 'required|in:purchase,used,wasted,returned',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $originalType = $tracking->type;
+        $originalAmount = $tracking->amount;
+        $originalItemId = $tracking->inventory_item_id;
+
+        $balanceAffectingChanges =
+            $originalType !== $validated['type'] ||
+            $originalAmount !== $validated['amount'] ||
+            $originalItemId !== $validated['inventory_item_id'];
+
+        if ($balanceAffectingChanges) {
+            $balanceImpactDelta = $this->calculateBalanceImpactDelta(
+                $originalType,
+                $originalAmount,
+                $validated['type'],
+                $validated['amount']
+            );
+
+            if ($balanceImpactDelta < 0) {
+                $wouldCauseNegative = $this->wouldCauseNegativeBalance(
+                    $validated['inventory_item_id'],
+                    $balanceImpactDelta,
+                    $tracking->date,
+                    $tracking->id
+                );
+
+                if ($wouldCauseNegative) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['amount' => 'This change would cause negative inventory in subsequent transactions.']);
+                }
+            }
+        }
+
+        $tracking->update($validated);
+
+        return redirect()->route('tracking.index')
+            ->with('success', 'Inventory tracking updated successfully.');
+    }
+
+    private function calculateBalanceImpactDelta($oldType, $oldAmount, $newType, $newAmount)
+    {
+        $oldImpact = ($oldType === 'purchase') ? $oldAmount : -$oldAmount;
+
+        $newImpact = ($newType === 'purchase') ? $newAmount : -$newAmount;
+
+        return $newImpact - $oldImpact;
+    }
+
+    private function wouldCauseNegativeBalance($inventoryItemId, $balanceChange, $date, $excludeTrackingId)
+    {
+        $futureTransactions = InventoryTracking::where('inventory_item_id', $inventoryItemId)
+            ->where('id', '!=', $excludeTrackingId)
+            ->where('date', '>=', $date)
+            ->orderBy('date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $runningBalance = $this->getBalanceAtDate($inventoryItemId, $date, $excludeTrackingId);
+
+        $runningBalance += $balanceChange;
+
+        if ($runningBalance < 0) {
+            return true;
+        }
+
+        foreach ($futureTransactions as $transaction) {
+            $transactionImpact = ($transaction->type === 'purchase') ? $transaction->amount : -$transaction->amount;
+            $runningBalance += $transactionImpact;
+
+            if ($runningBalance < 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getCurrentBalance($date = null)
+    {
+        $date = $date ?? date("Y-m-d");
+
+        $transactions = InventoryTracking::where('date', '<=', date("Y-m-d", strtotime($date)))->get();
+
+        $balance = 0;
+        foreach ($transactions as $transaction) {
+            if($transaction->type === 'purchase') {
+                $balance += $transaction->amount;
+            } else {
+                $balance -= $transaction->amount;
+            }
+        }
+        return $balance;
+    }
+    private function getBalanceAtDate($inventoryItemId, $date, $excludeTrackingId = null)
+    {
+        $query = InventoryTracking::where('inventory_item_id', $inventoryItemId)
+            ->where('date', '<', $date);
+
+        if ($excludeTrackingId) {
+            $query->where('id', '!=', $excludeTrackingId);
+        }
+
+        $transactions = $query->get();
+
+        $balance = 0;
+        foreach ($transactions as $transaction) {
+            if ($transaction->type === 'purchase') {
+                $balance += $transaction->amount;
+            } else {
+                $balance -= $transaction->amount;
+            }
+        }
+
+        return $balance;
     }
 
     public function store(Request $request)
@@ -53,12 +191,24 @@ class InventoryTrackingController extends Controller
             'amount' => 'required|numeric|min:0',
         ]);
 
-        // Add the logged in user ID
         $validated['user_id'] = Auth::user()->id;
+
+        if (in_array($validated['type'], ['used', 'wasted', 'returned'])) {
+            $currentBalance = $this->getBalanceAtDate(
+                $validated['inventory_item_id'],
+                $validated['date']
+            );
+
+            if ($currentBalance < $validated['amount']) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['amount' => 'Insufficient inventory. Current balance at this date: ' . $currentBalance]);
+            }
+        }
 
         InventoryTracking::create($validated);
 
-        return redirect()->route('inventory.trackings.index')
+        return redirect()->route('tracking.index')
             ->with('success', 'Inventory tracking created successfully.');
     }
 
@@ -74,28 +224,14 @@ class InventoryTrackingController extends Controller
         return view('inventory.trackings.edit', compact('tracking', 'items'));
     }
 
-    public function update(Request $request, InventoryTracking $tracking)
-    {
-        $validated = $request->validate([
-            'inventory_item_id' => 'required|exists:inventory_items,id',
-            'date' => 'required|date',
-            'description' => 'nullable|string',
-            'type' => 'required|in:purchase,used,wasted,returned',
-            'amount' => 'required|numeric|min:0',
-        ]);
-
-        $tracking->update($validated);
-
-        return redirect()->route('inventory.trackings.index')
-            ->with('success', 'Inventory tracking updated successfully.');
-    }
-
     public function destroy(InventoryTracking $tracking)
     {
         $tracking->delete();
 
-        return redirect()->route('inventory.trackings.index')
-            ->with('success', 'Inventory tracking deleted successfully.');
+        return new JsonResponse([
+            "status" => "success",
+            "message" => "Inventory tracking successfully deleted"
+        ], 200);
     }
 
     public function dailyReport(Request $request)
