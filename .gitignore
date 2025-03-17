@@ -47,4 +47,6 @@ yarn-error.log
 *.mpeg
 
 !public/logo.svg
+!public/logo-simple.png
+!public/receipt-logo.png
 
