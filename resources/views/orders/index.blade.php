@@ -32,14 +32,7 @@
             <div class="card-header align-items-center d-flex">
                 <h4 class="card-title mb-0 flex-grow-1">Order</h4>
                 <div class="flex-shrink-0">
-                    <div class="dropdown card-header-dropdown">
-                        <a class="text-reset dropdown-btn" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <span class="text-muted fs-18"><i class="mdi mdi-dots-vertical"></i></span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <a class="dropdown-item" href="{{route('order.create')}}">Create New</a>
-                        </div>
-                    </div>
+                    <a class="btn btn-sm btn-primary" href="{{route('order.create')}}">Create New</a>
                 </div>
             </div><!-- end card header -->
             <div class="card-body ">
