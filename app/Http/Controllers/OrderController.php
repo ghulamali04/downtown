@@ -30,8 +30,8 @@ class OrderController extends Controller
                     $qry->where('created_at', '<=', date("Y-m-d", strtotime($end_date)) . " 23:59:59");
                 }
             })
-            ->withSum('items', 'price')
-            ->value('items_sum_price');
+            ->join('order_items', 'orders.id', '=', 'order_items.order_id') // Join the related items
+            ->sum('order_items.price');
         return $totalPrice ?? 0;
     }
     public function get_latest_pending_orders(DataTables $dataTables)
@@ -110,6 +110,9 @@ class OrderController extends Controller
             })
             ->orderBy('id', 'desc');
         return $dataTables->eloquent($items)
+        ->addColumn('total_price', function ($item) {
+            return $item->total_price;
+        })
             ->addColumn('timestamp', function ($item) {
                 return date("d/m/Y H:iA", strtotime($item->created_at));
             })
