@@ -2,23 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\OrderExport;
 use App\Models\Customer;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\View;
+use Maatwebsite\Excel\Facades\Excel;
 use Mike42\Escpos\PrintConnectors\CupsPrintConnector;
-use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\Printer;
 
 class OrderController extends Controller
 {
+
+    public function getCurrentBalance($start_date = null, $end_date = null)
+    {
+        $totalPrice = Order::where('status', 'completed')
+            ->where(function ($qry) use ($start_date, $end_date) {
+                if (!empty($start_date)) {
+                    $qry->where('created_at', '>=', date("Y-m-d", strtotime($start_date)) . " 00:00:00");
+                }
+                if (!empty($end_date)) {
+                    $qry->where('created_at', '<=', date("Y-m-d", strtotime($end_date)) . " 23:59:59");
+                }
+            })
+            ->withSum('items', 'price')
+            ->value('items_sum_price');
+        return $totalPrice ?? 0;
+    }
     public function get_latest_pending_orders(DataTables $dataTables)
     {
         $items = Order::with(['customer', 'user'])
@@ -32,6 +47,44 @@ class OrderController extends Controller
                 return $item->id;
             })
             ->toJson();
+    }
+    public function exportOrders(Request $request)
+    {
+        $start_date = $request->get('start_date');
+        $end_date = $request->get('end_date');
+        $type = $request->get('type');
+        $status = $request->get('status');
+
+        $data = Order::with(['customer', 'user'])
+            ->where(function ($qry) use ($start_date, $end_date, $type, $status) {
+                if (!empty($start_date)) {
+                    $qry->where('created_at', '>=', date("Y-m-d", strtotime($start_date)));
+                }
+                if (!empty($end_date)) {
+                    $qry->where('created_at', '<=', date("Y-m-d", strtotime($end_date)));
+                }
+                if (!empty($type)) {
+                    $qry->where('type', $type);
+                }
+                if (!empty($status)) {
+                    $qry->where('status', $status);
+                }
+            })
+            ->orderBy('id', 'desc')->get();
+            $applied_filters = '';
+            if(!empty($start_date)) {
+                $applied_filters .= "Start Date:".date("Y-m-d", strtotime($start_date));
+            }
+            if(!empty($end_date)) {
+                $applied_filters .= "End Date:". date("Y-m-d", strtotime($end_date));
+            }
+            if(!empty($type)) {
+                $applied_filters .= "Type:".ucfirst($type);
+            }
+            if(!empty($status)) {
+                $applied_filters .= "Status:".ucfirst($status);
+            }
+        return Excel::download(new OrderExport($data, $applied_filters), 'orders.xlsx');
     }
     public function get_data(DataTables $dataTables, Request $request)
     {
@@ -180,7 +233,6 @@ class OrderController extends Controller
 
     public function update_status(Order $order, $status)
     {
-        $return = redirect();
         if ($status === "completed" || $status === "cancelled") {
             $order->update([
                 "status" => $status
@@ -189,12 +241,12 @@ class OrderController extends Controller
                 $order->update([
                     "payment_status" => "paid"
                 ]);
-                $return->route('order.receipt', ['order' => $order->id]);
+                return redirect()->route('order.receipt', ['order' => $order->id]);
             } else {
-                $return->back();
+                return redirect()->back();
             }
         }
-        return $return->with('success', 'Order status successfully updated');
+        return redirect()->back()->with('success', 'Order status successfully updated');
     }
 
     public function printTestPage(Request $request, $order)

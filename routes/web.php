@@ -26,6 +26,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/account-settings', [AccountController::class, 'update'])->name('account.settings.update');
     Route::put('/account-settings/password', [AccountController::class, 'change_password'])->name('account.settings.password.update');
 
+    Route::get('/orders/export', [OrderController::class, 'exportOrders']);
+    Route::get('/order/current/balance/{start_date?}/{end_date?}', [OrderController::class, 'getCurrentBalance']);
     Route::post('/order/receipt/print/{order}', [OrderController::class, 'printTestPage'])->name('order.receipt.print');
     Route::get('/order/receipt/{order}', [OrderController::class, 'receipt'])->name('order.receipt');
     Route::get('/order/data', [OrderController::class, 'get_data'])->name('order.data');

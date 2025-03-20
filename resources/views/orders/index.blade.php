@@ -33,10 +33,40 @@
                 <h4 class="card-title mb-0 flex-grow-1">Order</h4>
                 <div class="flex-shrink-0">
                     <a class="btn btn-sm btn-primary" href="{{route('order.create')}}">Create New</a>
+                    <button class="btn btn-sm btn-secondary" id="export">Export</button>
                 </div>
             </div><!-- end card header -->
             <div class="card-body ">
+                <div class="row">
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <!-- card -->
+                        <div class="card card-animate">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <p class="text-uppercase fw-medium text-muted text-truncate mb-0"> My Balance</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <h5 class="text-muted fs-14 mb-0" balance-date>
 
+                                        </h5>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-end justify-content-between mt-4">
+                                    <div>
+                                        <h4 class="fs-22 fw-semibold ff-secondary mb-4"><span class="counter-value" data-target="0.00" balance-value>0.00</span></h4>
+                                        <a href="#" class="text-decoration-underline"></a>
+                                    </div>
+                                    <div class="avatar-sm flex-shrink-0">
+                                        <span class="avatar-title bg-primary-subtle rounded fs-3">
+                                            <i class="bx bx-wallet text-primary"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div><!-- end card body -->
+                        </div><!-- end card -->
+                    </div>
+                </div>
                 <form method="GET" id="filtersForm" class="filtersForm">
                     <div class="row">
                         <div class="col-md-4 col-sm-6 col-12 mb-3">
@@ -78,11 +108,13 @@
                     <table id="thisTable" class="table table-bordered table-nowrap align-middle mb-0">
                         <thead>
                             <tr>
+                                <th scope="col">ID</th>
                                 <th scope="col">Type</th>
                                 <th scope="col">Customer</th>
                                 <th scope="col">Table No.</th>
                                 <th scope="col">Payment Status</th>
                                 <th scope="col">Status</th>
+                                <th scope="col">Price</th>
                                 <th scope="col">Created By</th>
                                 <th scope="col">Created At</th>
                                 <th scope="col">Action</th>
@@ -149,6 +181,7 @@
         },
         "order": [[ 0, "desc" ]],
         "columns": [
+            { "data": "id" },
             { "data": "type" },
             {
                 "data": "customer.first_name",
@@ -169,6 +202,9 @@
             },
             {
                 "data": "status"
+            },
+            {
+                "data": "total_price"
             },
             {
                 "data": "user.first_name",
@@ -213,11 +249,31 @@
     });
 
         $(document).ready(function () {
-
+            function loadBalance () {
+                const start_date = $("#filtersForm input[name=start_date]").val();
+                const end_date = $("#filtersForm input[name=end_date]").val();
+                $.ajax({
+                    type: "GET",
+                    url: "{{url('')}}/order/current/balance/"+start_date+"/"+end_date,
+                    beforeSend: function () {
+                        $("[balance-value]").html(parseFloat("0.00").toFixed(2))
+                    }
+                }).done(function (response) {
+                    $("[balance-value]").html(response)
+                })
+            }
+            $(document).on('click', '#export', function () {
+                const start_date = $("#filtersForm input[name=start_date]").val();
+                const end_date = $("#filtersForm input[name=end_date]").val();
+                const type = $("#filtersForm select[name=type]").val();
+                const status = $("#filtersForm select[name=status]").val();
+                window.location.href = `{{url("/orders/export")}}?start_date=${start_date}&end_date=${end_date}&type=${type}&status=${status}`
+            })
             $(document).on('submit', '#filtersForm', function (e) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
-                table.draw()
+                table.draw();
+                setTimeout(() => { loadBalance (); }, 3000);
             })
 
             $(document).on('click', '.receipt-btn', function () {
@@ -253,6 +309,8 @@
                     window.location.href = '{{ url('') }}/order/'+dataId+'/update/'+dataStatus
                 }
             });
+
+            setTimeout(() => { loadBalance (); }, 3000);
         });
 </script>
 @stop
