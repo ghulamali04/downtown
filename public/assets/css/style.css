@@ -263,3 +263,9 @@
 .card-radio .form-check-input:checked+.form-check-label:before, a {
     color: #FBBE0E
 }
+
+@media (max-width: 767.98px) {
+    [data-topbar=light] .app-menu {
+        background-color: #040404;
+    }
+}
