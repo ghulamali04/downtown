@@ -77,7 +77,7 @@
                                         <select class="form-select select2" name="item">
                                             <option value="" selected>Select</option>
                                             @foreach ($menuItems as $item)
-                                            <option value="{{$item->id}}" {{$item->id == @$oldItem->menu_item_id ? 'selected' : ''}}>{{$item->name}}</option>
+                                            <option value="{{$item->id}}" {{$item->id == @$oldItem->menu_item_id ? 'selected' : ''}}>{{$item->name . ' ' . $item->variant}}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -100,7 +100,7 @@
                                         <select class="form-select select2" name="item">
                                             <option value="" selected>Select</option>
                                             @foreach ($menuItems as $item)
-                                            <option value="{{$item->id}}">{{$item->name}}</option>
+                                            <option value="{{$item->id}}">{{$item->name . ' ' . $item->variant}}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -209,6 +209,7 @@
             show: function () {
                 const $row = $(this);
                 $row.slideDown();
+                $row.find("select.form-select").select2()
                 function isData() { var t = document.getElementsByClassName("plus"), e = document.getElementsByClassName("minus"), n = document.getElementsByClassName("product"); t && Array.from(t).forEach(function (t) { t.addEventListener("click", function (e) { parseInt(t.previousElementSibling.value) < e.target.previousElementSibling.getAttribute("max") && (e.target.previousElementSibling.value++, n) && Array.from(n).forEach(function (t) { updateQuantity(e.target) }) }) }), e && Array.from(e).forEach(function (t) { t.addEventListener("click", function (e) { parseInt(t.nextElementSibling.value) > e.target.nextElementSibling.getAttribute("min") && (e.target.nextElementSibling.value--, n) && Array.from(n).forEach(function (t) { updateQuantity(e.target) }) }) }) } isData();
                 $row.find('.cur-qty').val(1)
             },

@@ -36,7 +36,7 @@ class OrderController extends Controller
     }
     public function get_latest_pending_orders(DataTables $dataTables)
     {
-        $items = Order::with(['customer', 'user'])
+        $items = Order::with(['customer', 'user', 'items'])
             ->where('status', 'pending')
             ->orderBy('id', 'desc');
         return $dataTables->eloquent($items)
@@ -158,7 +158,7 @@ class OrderController extends Controller
             OrderItem::create([
                 'order_id' => $order->id,
                 'menu_item_id' => $menuItem->id,
-                'name' => $menuItem->name,
+                'name' => $menuItem->name . ' ' . $menuItem->variant,
                 'qty' => $item['qty'],
                 'price' => $menuItem->current_price,
             ]);
@@ -189,7 +189,7 @@ class OrderController extends Controller
             OrderItem::create([
                 'order_id' => $order->id,
                 'menu_item_id' => $menuItem->id,
-                'name' => $menuItem->name,
+                'name' => $menuItem->name . ' ' . $menuItem->variant,
                 'qty' => $item['qty'],
                 'price' => $menuItem->current_price,
             ]);

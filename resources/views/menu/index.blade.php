@@ -41,6 +41,7 @@
                         <thead>
                             <tr>
                                 <th scope="col">Name</th>
+                                <th scope="col">Variant</th>
                                 <th scope="col">Price</th>
                                 <th scope="col">Action</th>
                             </tr>
@@ -99,6 +100,7 @@
         "order": [[ 0, "desc" ]],
         "columns": [
             { "data": "name" },
+            { "data": "variant" },
             { "data": "current_price" },
             {
                 "data" : "action",

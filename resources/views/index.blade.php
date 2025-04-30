@@ -48,8 +48,9 @@
                         <table id="thisTable" class="table table-bordered table-nowrap align-middle mb-0">
                             <thead>
                                 <tr>
+                                    <th scope="col"></th>
                                     <th scope="col">Type</th>
-                                    <th scope="col">Customer</th>
+                                    <th scope="col">Staff</th>
                                     <th scope="col">Table No.</th>
                                     <th scope="col">Created At</th>
                                     <th scope="col">Action</th>
@@ -1383,13 +1384,19 @@
         ajax: '{{ route('order.data.latest') }}',
         "order": [[ 0, "desc" ]],
         "columns": [
+            {
+        className: 'details-control cursor-pointer',
+        orderable: false,
+        data: null,
+        defaultContent: '<i class="ri-arrow-down-s-line ri-lg"></i>',
+    },
             { "data": "type" },
             {
-                "data": "customer.first_name",
+                "data": "user.first_name",
                 "render": function (data, type, row) {
                     if(row.customer) {
                         return `
-                            ${row.customer.first_name + ' ' + row.customer.last_name}
+                            ${row.user.first_name + ' ' + row.user.last_name}
                         `
                     }
                     return ``
@@ -1431,6 +1438,53 @@
     });
 
         $(document).ready(function () {
+
+            function formatChildRow(order) {
+    if (!order.items || order.items.length === 0) {
+        return '<div class="p-2">No line items.</div>';
+    }
+
+    let html = `
+        <table class="table table-bordered table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    order.items.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.qty}</td>
+                <td>${item.price}</td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table>';
+
+    return html;
+}
+
+$('#thisTable tbody').on('click', 'td.details-control', function () {
+    const tr = $(this).closest('tr');
+    const row = table.row(tr);
+
+    if (row.child.isShown()) {
+        row.child.hide();
+        tr.removeClass('shown');
+    } else {
+        row.child(formatChildRow(row.data())).show();
+        tr.addClass('shown');
+    }
+});
+
+
             $(document).on('click', '.receipt-btn', function () {
                 const id = $(this).data('id');
                 window.location.href= '{{url('')}}/order/receipt/'+id

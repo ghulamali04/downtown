@@ -16,7 +16,7 @@ class InventoryTrackingController extends Controller
     {
         $query = InventoryTracking::with('inventoryItem', 'user');
 
-        if ($request->has('item_id')) {
+        if (!empty($request->item_id)) {
             $query->where('inventory_item_id', $request->item_id);
         }
 
@@ -24,11 +24,11 @@ class InventoryTrackingController extends Controller
             $query->where('type', $request->type);
         }
 
-        if($request->has('date')) {
+        if(!empty($request->date)) {
             $query->where('date', '<=', date("Y-m-d", strtotime($request->date)));
         }
 
-        if ($request->has('start_date') && $request->has('end_date')) {
+        if (!empty($request->start_date) && !empty($request->end_date)) {
             $query->whereBetween('date', [$request->start_date, $request->end_date]);
         }
 
@@ -161,7 +161,7 @@ class InventoryTrackingController extends Controller
     private function getBalanceAtDate($inventoryItemId, $date, $excludeTrackingId = null)
     {
         $query = InventoryTracking::where('inventory_item_id', $inventoryItemId)
-            ->where('date', '<', $date);
+            ->where('date', '<=', $date);
 
         if ($excludeTrackingId) {
             $query->where('id', '!=', $excludeTrackingId);

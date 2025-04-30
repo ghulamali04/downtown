@@ -90,7 +90,7 @@
         <div class="receipt-items" id="receipt-items">
             @foreach ($order->items as $item)
             <div class="item-row" style="flex-direction: column;margin-bottom: 0.75rem;">
-                <div style="display: block;width: 100%"><span>{!! $item->name !!}</span></div>
+                <div style="display: block;width: 100%"><span>{!! $item->name . ' ' . $item->variant !!}</span></div>
                 <div class="item-row">
                     <span>Qty x {{$item->qty}}</span>
                     <span>PKR{{number_format($item->price * $item->qty, 2)}}</span>

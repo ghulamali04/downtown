@@ -1048,6 +1048,7 @@
         $(function () {
         'use-strict';
         $(".flatpickr").flatpickr({});
+        $("select.form-select").select2();
     });
         function showSuccessMessage(message) {
             Swal.fire({

@@ -12,6 +12,7 @@ class MenuItem extends Model
 
     protected $fillable = [
         'name',
+        'variant',
         'current_price'
     ];
 }

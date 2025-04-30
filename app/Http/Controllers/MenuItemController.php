@@ -47,6 +47,7 @@ class MenuItemController extends Controller
         $this->menuItemValidation($request->except('_token'));
         MenuItem::create([
             "name" => $request->input('name'),
+            "variant" => $request->input('variant'),
             "current_price" => $request->input('price')
         ]);
         return redirect()->back()->with('success', 'Menu Item successfully created');
@@ -57,6 +58,7 @@ class MenuItemController extends Controller
         $menuItem = MenuItem::findOrFail($menuItem);
         $menuItem->update([
             "name" => $request->input('name'),
+            "variant" => $request->input('variant'),
             "current_price" => $request->input('price')
         ]);
         return redirect()->back()->with('success', 'Menu Item successfully updated');
