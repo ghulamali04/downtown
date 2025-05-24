@@ -93,7 +93,9 @@
                 <div style="display: block;width: 100%"><span>{!! $item->name . ' ' . $item->variant !!}</span></div>
                 <div class="item-row">
                     <span>Qty x {{$item->qty}}</span>
+                    @if (Auth::user()->role != 'kitchen')
                     <span>PKR{{number_format($item->price * $item->qty, 2)}}</span>
+                    @endif
                 </div>
             </div>
             @php
@@ -106,7 +108,9 @@
 
         <div class="total">
             <span>TOTAL:</span>
+            @if (Auth::user()->role != 'kitchen')
             <span id="receipt-total">PKR{{number_format($total, 2)}}</span>
+            @endif
         </div>
 
         <div class="divider"></div>
