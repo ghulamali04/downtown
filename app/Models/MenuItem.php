@@ -13,6 +13,17 @@ class MenuItem extends Model
     protected $fillable = [
         'name',
         'variant',
-        'current_price'
+        'current_price',
+        'menu_category_id'
     ];
+
+    public function variants()
+    {
+        return $this->hasMany(MenuItemVariant::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(MenuCategory::class, 'menu_category_id', 'id');
+    }
 }

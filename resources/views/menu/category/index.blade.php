@@ -11,12 +11,12 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between bg-transparent">
-            <h4 class="mb-sm-0">Menu</h4>
+            <h4 class="mb-sm-0">Menu Category</h4>
 
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{route('home')}}">Dashboard</a></li>
-                    <li class="breadcrumb-item active"><a href="javascript:void(0);">Menu</a></li>
+                    <li class="breadcrumb-item active"><a href="javascript:void(0);">Menu Category</a></li>
                 </ol>
             </div>
 
@@ -30,9 +30,9 @@
     <div class="col-xxl-12">
         <div class="card ">
             <div class="card-header align-items-center d-flex">
-                <h4 class="card-title mb-0 flex-grow-1">Menu</h4>
+                <h4 class="card-title mb-0 flex-grow-1">Menu Category</h4>
                 <div class="flex-shrink-0">
-                    <a class="btn btn-sm btn-primary" href="{{route('menu.create')}}">Create New</a>
+                    <a class="btn btn-sm btn-primary" href="{{route('category.create')}}">Create New</a>
                 </div>
             </div><!-- end card header -->
             <div class="card-body ">
@@ -41,8 +41,6 @@
                         <thead>
                             <tr>
                                 <th scope="col">Name</th>
-                                <th scope="col">Category</th>
-                                <th scope="col">Price</th>
                                 <th scope="col">Action</th>
                             </tr>
                         </thead>
@@ -96,12 +94,10 @@
                 'html': true
             });
         },
-        ajax: '{{ route('menu.data') }}',
+        ajax: '{{ route('category.data') }}',
         "order": [[ 0, "desc" ]],
         "columns": [
             { "data": "name" },
-            { "data": "category.name" },
-            { "data": "current_price" },
             {
                 "data" : "action",
                 "render": function (data, type, row) {
@@ -121,7 +117,7 @@
         $(document).ready(function () {
             $(document).on('click', '.edit-btn', function () {
                 const id = $(this).data('id');
-                window.location.href= '{{url('menu')}}/'+id+'/edit'
+                window.location.href= '{{url('menu/category')}}/'+id+'/edit'
             });
             $(document).on('click', '.delete-btn', function () {
                 const dataId = $(this).attr('data-id')
@@ -129,7 +125,7 @@
                 if(c) {
                     $.ajax({
                         type: "POST",
-                        url: '{{ url('menu') }}/' + dataId,
+                        url: '{{ url('menu/category') }}/' + dataId,
                         data: {
                             _token: '{{ csrf_token() }}',
                             _method: 'DELETE'

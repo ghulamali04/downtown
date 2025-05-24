@@ -15,11 +15,21 @@ class OrderItem extends Model
         'name',
         'price',
         'menu_item_id',
+        'menu_category_id',
+        'menu_item_variant_id',
         'qty'
     ];
 
-    public function menu()
+    public function menu_item()
     {
-        return $this->hasOne(MenuItem::class);
+        return $this->belongsTo(MenuItem::class, 'menu_item_id', 'id');
+    }
+    public function menu_category()
+    {
+        return $this->belongsTo(MenuCategory::class, 'menu_category_id', 'id');
+    }
+    public function menu_item_variant()
+    {
+        return $this->belongsTo(MenuItemVariant::class, 'menu_item_variant_id', 'id');
     }
 }

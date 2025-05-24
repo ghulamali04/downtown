@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MenuCategory;
-use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Validator;
+use App\Models\MenuItem;
+use App\Models\MenuItemVariant;
 
-class MenuItemController extends Controller
+class MenuItemVariantController extends Controller
 {
     public function get_data(DataTables $dataTables)
     {
-        $items = MenuItem::with('category');
+        $items = MenuItemVariant::with(['item', 'item.category']);
         return $dataTables->eloquent($items)
         ->addColumn('timestamp', function ($item) {
             return date("d/m/Y H:iA", strtotime($item->created_at));
@@ -27,47 +27,47 @@ class MenuItemController extends Controller
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'numeric'],
-            'menu_category_id' => ['required', 'exists:menu_categories,id']
+            'price' => ['required', 'numeric', 'min:1'],
+            'menu_item_id' => ['required', 'exists:menu_items,id']
         ])->validate();
     }
     public function index()
     {
-        return view("menu.index");
+        return view("menu.variant.index");
     }
     public function create()
     {
-        $categories = MenuCategory::all();
-        return view("menu.create", compact('categories'));
+        $items = MenuItem::all();
+        return view("menu.variant.create", compact('items'));
     }
     public function edit($item)
     {
-        $item = MenuItem::findOrFail($item);
-        $categories = MenuCategory::all();
-        return view("menu.edit", compact('item', 'categories'));
+        $item = MenuItemVariant::findOrFail($item);
+        $items = MenuItem::all();
+        return view("menu.variant.edit", compact('item', 'items'));
     }
     public function store(Request $request)
     {
         $this->menuItemValidation($request->except('_token'));
-        MenuItem::create([
+        MenuItemVariant::create([
             "name" => $request->input('name'),
-            "menu_category_id" => $request->input('menu_category_id'),
+            "menu_item_id" => $request->input('menu_item_id'),
             "current_price" => $request->input('price')
         ]);
-        return redirect()->back()->with('success', 'Menu Item successfully created');
+        return redirect()->back()->with('success', 'Menu Item Variant successfully created');
     }
     public function update(Request $request, $menuItem)
     {
         $this->menuItemValidation($request->except('_token'));
-        $menuItem = MenuItem::findOrFail($menuItem);
+        $menuItem = MenuItemVariant::findOrFail($menuItem);
         $menuItem->update([
             "name" => $request->input('name'),
-            "menu_category_id" => $request->input('menu_category_id'),
+            "menu_item_id" => $request->input('menu_item_id'),
             "current_price" => $request->input('price')
         ]);
-        return redirect()->back()->with('success', 'Menu Item successfully updated');
+        return redirect()->back()->with('success', 'Menu Item Variant successfully updated');
     }
-    public function destroy(MenuItem $menuItem)
+    public function destroy(MenuItemVariant $menuItem)
     {
         $menuItem->delete();
         return new JsonResponse([

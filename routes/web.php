@@ -4,7 +4,10 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\InventoryTrackingController;
+use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\MenuItemController;
+use App\Http\Controllers\MenuItemVariantController;
+use App\Http\Controllers\OpenApiController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\AdminLevelAuth;
@@ -21,6 +24,10 @@ Route::middleware(['auth'])->group(function () {
     })
     ->name('home')
     ->middleware('auth');
+
+    Route::get('/openapi/menu/categories', [OpenApiController::class, 'getMenuCategories'])->name('openapi.menu.categories');
+    Route::get('/openapi/menu/items', [OpenApiController::class, 'getMenuItems'])->name('openapi.menu.items');
+    Route::get('/openapi/menu/variants', [OpenApiController::class, 'getMenuItemVariants'])->name('openapi.menu.variants');
 
     Route::get('/account-settings', [AccountController::class, 'index'])->name('account.settings');
     Route::put('/account-settings', [AccountController::class, 'update'])->name('account.settings.update');
@@ -41,6 +48,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/order/{order}/update/{status}', [OrderController::class, 'update_status'])->name('order.update.status');
 
     Route::middleware([AdminLevelAuth::class])->group(function () {
+
+        Route::get('/menu/category/data', [MenuCategoryController::class, 'get_data'])->name('category.data');
+        Route::resource('/menu/category', MenuCategoryController::class);
+
+        Route::get('/menu/variant/data', [MenuItemVariantController::class, 'get_data'])->name('variant.data');
+        Route::resource('/menu/variant', MenuItemVariantController::class);
+
         Route::get('/menu/data', [MenuItemController::class, 'get_data'])->name('menu.data');
         Route::resource('/menu', MenuItemController::class);
 

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Exports\OrderExport;
 use App\Models\Customer;
+use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\MenuItemVariant;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -128,15 +130,15 @@ class OrderController extends Controller
     public function create()
     {
         $customers = Customer::get();
-        $menuItems = MenuItem::get();
-        return view("orders.create", compact("customers", "menuItems"));
+        $menuCateogryItems = MenuCategory::get();
+        return view("orders.create", compact("customers", "menuCateogryItems"));
     }
     public function edit($order)
     {
-        $order = Order::with(['items', 'customer'])->findOrFail($order);
+        $order = Order::with(['items', 'customer', 'user', 'items.menu_item', 'items.menu_category', 'items.menu_item_variant'])->findOrFail($order);
         $customers = Customer::get();
-        $menuItems = MenuItem::get();
-        return view("orders.edit", compact("customers", "menuItems", "order"));
+        $menuCateogryItems = MenuCategory::get();
+        return view("orders.edit", compact("customers", "menuCateogryItems", "order"));
     }
     public function store(Request $request)
     {
@@ -154,13 +156,17 @@ class OrderController extends Controller
         ]);
 
         foreach ($request->menuItems as $item) {
+            $menuCategory = MenuCategory::find($item['category']);
             $menuItem = MenuItem::where('id', $item['item'])->first();
+            $menuItemVariant = MenuItemVariant::where('id', $item['variant'])->first();
             OrderItem::create([
                 'order_id' => $order->id,
                 'menu_item_id' => $menuItem->id,
-                'name' => $menuItem->name . ' ' . $menuItem->variant,
+                'menu_category_id' => $menuCategory->id,
+                'menu_item_variant_id' => @$menuItemVariant->id,
+                'name' => $menuItem->name . ' ' . @$menuItemVariant->name,
                 'qty' => $item['qty'],
-                'price' => $menuItem->current_price,
+                'price' => @$menuItemVariant->current_price > 0 ? $menuItemVariant->current_price : $menuItem->current_price,
             ]);
         }
 
@@ -184,14 +190,18 @@ class OrderController extends Controller
 
         OrderItem::where('order_id', $order->id)->delete();
 
-        foreach ($request->order_items as $item) {
+        foreach ($request->menuItems as $item) {
+            $menuCategory = MenuCategory::find($item['category']);
             $menuItem = MenuItem::where('id', $item['item'])->first();
+            $menuItemVariant = MenuItemVariant::where('id', @$item['variant'])->first();
             OrderItem::create([
                 'order_id' => $order->id,
                 'menu_item_id' => $menuItem->id,
-                'name' => $menuItem->name . ' ' . $menuItem->variant,
+                'menu_category_id' => $menuCategory->id,
+                'menu_item_variant_id' => @$menuItemVariant->id,
+                'name' => $menuItem->name . ' ' . @$menuItemVariant->name,
                 'qty' => $item['qty'],
-                'price' => $menuItem->current_price,
+                'price' => @$menuItemVariant->current_price > 0 ? $menuItemVariant->current_price : $menuItem->current_price,
             ]);
         }
 

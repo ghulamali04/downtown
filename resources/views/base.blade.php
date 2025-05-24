@@ -179,9 +179,22 @@
 
                         @if (Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
                         <li class="nav-item">
-                            <a class="nav-link menu-link {{Request::is('menu/*') || Request::is('menu') ? 'active' : ''}}" href="{{route('menu.index')}}">
-                                <i class="ri-function-line"></i> <span data-key="t-menu-items">Menu</span>
+                            <a class="nav-link menu-link {{Request::is('menu/*') ? 'active' : ''}}" href="#sidebarDashboards" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarDashboards">
+                                <i class="ri-store-line"></i> <span data-key="t-dashboards">Menu</span>
                             </a>
+                            <div class="collapse menu-dropdown {{Request::is('menu/*') ? 'show' : ''}}" id="sidebarDashboards">
+                                <ul class="nav nav-sm flex-column">
+                                    <li class="nav-item">
+                                        <a href="{{route('menu.index')}}" class="nav-link {{Request::is('menu/*') || Request::is('menu') ? 'active' : ''}}" data-key="t-menu-items"> Menu </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{route('variant.index')}}" class="nav-link {{Request::is('menu/variant/*') || Request::is('menu/variant') ? 'active' : ''}}" data-key="t-variants"> Variants </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{route('category.index')}}" class="nav-link {{Request::is('menu/category/*') || Request::is('menu/category') ? 'active' : ''}}" data-key="t-categories"> Categories </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
                         @endif
 

@@ -4,12 +4,12 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between bg-transparent">
-            <h4 class="mb-sm-0">Edit Menu Item</h4>
+            <h4 class="mb-sm-0">Edit Menu Variant</h4>
 
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{route('home')}}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{route('menu.index')}}">Menu</a></li>
+                    <li class="breadcrumb-item"><a href="{{route('variant.index')}}">Menu Variant</a></li>
                     <li class="breadcrumb-item active">Edit</li>
                 </ol>
             </div>
@@ -26,7 +26,7 @@
                 <h4 class="card-title mb-0 flex-grow-1">Edit</h4>
             </div><!-- end card header -->
             <div class="card-body pt- 0">
-                <form method="POST" action="{{ route('menu.update', ['menu' => $item->id]) }}">@csrf
+                <form method="POST" action="{{ route('variant.update', ['variant' => $item->id]) }}">@csrf
                     @method('PUT')
                     <div class="row">
                         <div class=" col-md-4 col-sm-6 col-12 mb-3">
@@ -38,14 +38,14 @@
                             @enderror
                         </div>
                         <div class=" col-md-4 col-sm-6 col-12 mb-3">
-                            <label class="form-label">Category</label>
-                            <select class="form-select @error('menu_category_id') is-invalid @enderror" name="menu_category_id">
-                                <option value="">Select Category</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}" {{ $category->id == $item->menu_category_id ? 'selected' : '' }}>{{ $category->name }}</option>
+                            <label class="form-label">Menu</label>
+                            <select class="form-select @error('menu_item_id') is-invalid @enderror" name="menu_item_id">
+                                <option value="">Select Menu</option>
+                                @foreach ($items as $i)
+                                    <option value="{{ $i->id }}" {{ $i->id == $item->menu_item_id ? 'selected' : '' }}>{{ $i->name }}</option>
                                 @endforeach
                             </select>
-                            @error('menu_category_id')
+                            @error('menu_item_id')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>

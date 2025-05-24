@@ -69,38 +69,23 @@
 
                         <div class="row items-repeater">
                             <div class="col-md-12" data-repeater-list="menuItems">
-                                @if(@old('menuItems'))
-                                @foreach (old('menuItems') as $oldItem)
                                 <div class="row" data-repeater-item>
-                                    <div class="col-sm-6 mb-3">
-                                        <select class="form-select select2" name="item">
-                                            <option value="" selected>Select</option>
-                                            @foreach ($menuItems as $item)
-                                            <option value="{{$item->id}}" {{$item->id == @$oldItem['item'] ? 'selected' : ''}}>{{$item->name . ' ' . $item->variant}}</option>
+                                    <div class="col-sm-3 mb-3">
+                                        <select class="form-select select2 menu-item-category" name="category" data-name="category" data-id="0">
+                                            <option value="" selected>Select Category</option>
+                                            @foreach ($menuCateogryItems as $item)
+                                            <option value="{{$item->id}}">{{$item->name}}</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-sm-2 mb-3">
-                                        <div class="input-step">
-                                            <input type="hidden" class="cur-qty" name="qty" value="{{ $oldItem['qty'] }}">
-                                            <button type="button" class="minus">–</button>
-                                            <input type="number" class="qty" name="qty" value="{{ $oldItem['qty'] }}" min="1" max="100">
-                                            <button type="button" class="plus">+</button>
-                                        </div>
+                                    <div class="col-sm-3 mb-3">
+                                        <select class="form-select select2 menu-item" name="item" data-name="item" data-id="0">
+                                            <option value="" selected>Select Menu Item</option>
+                                        </select>
                                     </div>
-                                    <div class="col-sm-2 mb-3">
-                                        <button type="button" class="btn btn-sm btn-danger mt-2" data-repeater-delete><i class="ri-delete-bin-2-line"></i></button>
-                                    </div>
-                                </div>
-                                @endforeach
-                                @else
-                                <div class="row" data-repeater-item>
-                                    <div class="col-sm-6 mb-3">
-                                        <select class="form-select select2" name="item">
-                                            <option value="" selected>Select</option>
-                                            @foreach ($menuItems as $item)
-                                            <option value="{{$item->id}}">{{$item->name . ' ' . $item->variant}}</option>
-                                            @endforeach
+                                    <div class="col-sm-3 mb-3">
+                                        <select class="form-select select2 menu-item-variant" name="variant" data-name="variant" data-id="0">
+                                            <option value="" selected>Select Variant</option>
                                         </select>
                                     </div>
                                     <div class="col-sm-2 mb-3">
@@ -115,7 +100,6 @@
                                         <button type="button" class="btn btn-sm btn-danger mt-2" data-repeater-delete><i class="ri-delete-bin-2-line"></i></button>
                                     </div>
                                 </div>
-                                @endif
                             </div>
                             <div class="row">
                                 <div class="col-md-12 mb-3">
@@ -202,13 +186,25 @@
 <script src="{{asset('/')}}assets/js/pages/form-input-spin.init.js"></script>
 <script src="{{asset('/')}}assets/libs/repeater/jquery.repeater.js"></script>
 <script>
+    function uniqueId() {
+        return 'id' + Math.random().toString(36).substr(2, 9);
+    }
     $(document).ready(function () {
         $(".items-repeater").repeater({
             initEmpty: false,
             show: function () {
                 const $row = $(this);
                 $row.slideDown();
-                $row.find("select.form-select").select2()
+                const index = uniqueId()
+
+                $row.find("select.menu-item-category").attr('data-id', index)
+                $row.find("select.menu-item-category").select2()
+
+                $row.find("select.menu-item").attr('data-id', index)
+                $row.find("select.menu-item").select2()
+
+                $row.find("select.menu-item-variant").attr('data-id', index)
+                $row.find("select.menu-item-variant").select2()
                 function isData() { var t = document.getElementsByClassName("plus"), e = document.getElementsByClassName("minus"), n = document.getElementsByClassName("product"); t && Array.from(t).forEach(function (t) { t.addEventListener("click", function (e) { parseInt(t.previousElementSibling.value) < e.target.previousElementSibling.getAttribute("max") && (e.target.previousElementSibling.value++, n) && Array.from(n).forEach(function (t) { updateQuantity(e.target) }) }) }), e && Array.from(e).forEach(function (t) { t.addEventListener("click", function (e) { parseInt(t.nextElementSibling.value) > e.target.nextElementSibling.getAttribute("min") && (e.target.nextElementSibling.value--, n) && Array.from(n).forEach(function (t) { updateQuantity(e.target) }) }) }) } isData();
                 $row.find('.cur-qty').val(1)
             },
@@ -293,6 +289,56 @@
             })
         })
 
+        function getMenuItem(id) {
+            return  $.ajax({
+                type: "GET",
+                url: "{{url('/openapi/menu/items')}}?menu_category_id=" + id,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+        }
+
+        function getMenuItemVariant(id) {
+            return $.ajax({
+                type: "GET",
+                url: "{{url('/openapi/menu/variants')}}?menu_item_id=" + id,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+        }
+
+
+        $(document).on('change', '.select2', function () {
+            const id = $(this).val()
+            const index = $(this).data('id')
+            const name = $(this).data('name')
+            if(name == 'category') {
+                getMenuItem(id).done(function (response) {
+                    const el = $(`.menu-item[data-id=${index}]`)
+                    el.select2('destroy')
+                    let html = `<option value="">Select Menu Item</option>`
+                    response.forEach(option => {
+                        html += `<option value="${option.id}">${option.name} (${option.current_price})</option>`
+                    })
+                    el.html(html)
+                    el.select2()
+                })
+            }
+            if(name == 'item') {
+                getMenuItemVariant(id).done(function (response) {
+                    const el = $(`.menu-item-variant[data-id=${index}]`)
+                    el.select2('destroy')
+                    let html = `<option value="">Select Variant</option>`
+                    response.forEach(option => {
+                        html += `<option value="${option.id}">${option.name} (${option.current_price})</option>`
+                    })
+                    el.html(html)
+                    el.select2()
+                })
+            }
+        })
 
     });
 </script>
