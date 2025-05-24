@@ -114,7 +114,9 @@
                                 <th scope="col">Table No.</th>
                                 <th scope="col">Payment Status</th>
                                 <th scope="col">Status</th>
+                                @if (Auth::user()->role != 'kitchen')
                                 <th scope="col">Price</th>
+                                @endif
                                 <th scope="col">Created By</th>
                                 <th scope="col">Created At</th>
                                 <th scope="col">Action</th>
@@ -203,9 +205,11 @@
             {
                 "data": "status"
             },
+            @if (Auth::user()->role != 'kitchen')
             {
                 "data": "total_price"
             },
+            @endif
             {
                 "data": "user.first_name",
                 "render": function (data, type, row) {

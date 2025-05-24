@@ -1358,6 +1358,43 @@
 <script src="{{asset('/')}}assets/libs/datatables-scroller/js/dataTables.scroller.js"></script>
 <script src="{{asset('/')}}assets/libs/datatables-scroller/js/scroller.bootstrap4.js"></script>
 <script type="module">
+
+function formatChildRow(order) {
+    if (!order.items || order.items.length === 0) {
+        return '<div class="p-2">No line items.</div>';
+    }
+
+    let html = `
+        <table class="table table-bordered table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    @if (Auth::user()->role != 'kitchen')
+                    <th>Price</th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    order.items.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.qty}</td>
+                @if (Auth::user()->role != 'kitchen')
+                <td>${item.price}</td>
+                @endif
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table>';
+
+    return html;
+}
+
     const table = $("#thisTable").DataTable({
         "paging": true,
         "ordering": true,
@@ -1369,7 +1406,7 @@
         scrollY: 300,
         deferRender: true,
         scroller: true,
-        "initComplete": function(settings, json) {
+        "initComplete": function (settings, json) {
             $('[data-toggle="tooltip"]').tooltip({
                 container: 'body',
                 'html': true
@@ -1439,37 +1476,6 @@
 
         $(document).ready(function () {
 
-            function formatChildRow(order) {
-    if (!order.items || order.items.length === 0) {
-        return '<div class="p-2">No line items.</div>';
-    }
-
-    let html = `
-        <table class="table table-bordered table-sm mb-0">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-    order.items.forEach(item => {
-        html += `
-            <tr>
-                <td>${item.name}</td>
-                <td>${item.qty}</td>
-                <td>${item.price}</td>
-            </tr>
-        `;
-    });
-
-    html += '</tbody></table>';
-
-    return html;
-}
 
 $('#thisTable tbody').on('click', 'td.details-control', function () {
     const tr = $(this).closest('tr');
@@ -1521,7 +1527,7 @@ $('#thisTable tbody').on('click', 'td.details-control', function () {
 
             setInterval(function () {
                 table.ajax.reload(null, false);
-            }, 10000);
+            }, 20000);
         });
 </script>
 @stop
