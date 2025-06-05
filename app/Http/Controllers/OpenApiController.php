@@ -23,7 +23,7 @@ class OpenApiController extends Controller
 
     public function getMenuItemVariants(Request $request)
     {
-        $variants = MenuItemVariant::where('menu_item_id', $request->menu_item_id)->get();
+        $variants = MenuItemVariant::with(['item'])->where('menu_item_id', $request->menu_item_id)->get();
         return response()->json($variants);
     }
 }

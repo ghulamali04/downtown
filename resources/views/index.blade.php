@@ -49,6 +49,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col"></th>
+                                    <th scope="col">ID</th>
                                     <th scope="col">Type</th>
                                     <th scope="col">Staff</th>
                                     <th scope="col">Table No.</th>
@@ -1427,6 +1428,7 @@ function formatChildRow(order) {
         data: null,
         defaultContent: '<i class="ri-arrow-down-s-line ri-lg"></i>',
     },
+    { "data": "id" },
             { "data": "type" },
             {
                 "data": "user.first_name",

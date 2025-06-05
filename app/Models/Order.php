@@ -17,7 +17,8 @@ class Order extends Model
         'table_number',
         'status',
         'payment_status',
-        'instructions'
+        'instructions',
+        'is_paid'
     ];
 
     public function items()

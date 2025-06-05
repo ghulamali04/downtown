@@ -18,7 +18,8 @@ class CustomerController extends Controller
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('first_name', 'like', "%{$searchTerm}%")
-                ->orWhere('last_name', 'like', "%{$searchTerm}%");
+                ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                ->orWhere('phone_number', 'like', "%{$searchTerm}%");
             });
         }
         $customers = $query->paginate(20);

@@ -41,7 +41,7 @@
                         </div>
 
                         <div class="col-md-4 col-sm-6 col-12 mb-3">
-                            <label class="form-label">Customer <span id="add-new-customer" style="cursor: pointer"><i class="ri-add-circle-line"></i></span></label>
+                            <label class="form-label">Customer <span id="add-new-customer" style="cursor: pointer"><i class="ri-add-circle-line ri-xl"></i></span></label>
                             <select class="form-control select2 @error('customer') is-invalid @enderror" name="customer" id="customer-select">
                                 @if(@$order->customer)
                                 <option value="{{ $order->customer->id }}">{{ $order->customer->first_name . ' ' . $order->customer->last_name }}</option>
@@ -81,13 +81,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-sm-3 mb-3">
-                                        <select class="form-select select2 menu-item" name="item" data-name="item" data-id="{{$loop->iteration}}">
-                                            <option value="" selected>Select Menu Item</option>
-                                            <option value="{{@$oldItem->menu_item_id}}" selected>{{ @$oldItem->menu_item->name . '( '. @$oldItem->menu_item->current_price .' )'}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-sm-3 mb-3">
+                                    <div class="col-sm-6 mb-3">
                                         <select class="form-select select2 menu-item-variant" name="variant" data-name="variant" data-id="{{$loop->iteration}}">
                                             <option value="" selected>Select Variant</option>
                                             <option value="{{@$oldItem->menu_item_variant_id}}" selected>{{ @$oldItem->menu_item_variant->name . '('.@$oldItem->menu_item_variant->current_price.')' }}</option>
@@ -116,12 +110,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-sm-3 mb-3">
-                                        <select class="form-select select2 menu-item" name="item" data-name="item" data-id="0">
-                                            <option value="" selected>Select Menu Item</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-sm-3 mb-3">
+                                    <div class="col-sm-6 mb-3">
                                         <select class="form-select select2 menu-item-variant" name="variant" data-name="variant" data-id="0">
                                             <option value="" selected>Select Variant</option>
                                         </select>
@@ -178,9 +167,7 @@
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Add New Customer</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <div class="row">
@@ -212,7 +199,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <button type="submit" class="btn btn-primary">Save changes</button>
             </div>
           </div>
@@ -281,7 +268,7 @@ $row.find("select.menu-item-variant").select2()
                     results: data.data.map(function(customer) {
                         return {
                             id: customer.id,
-                            text: customer.first_name + ' ' + customer.last_name
+                            text: customer.first_name + ' ' + customer.last_name + ' ' + customer.phone_number
                         };
                     }),
                     pagination: {
@@ -314,7 +301,7 @@ $row.find("select.menu-item-variant").select2()
                 }
             }).done(function (response) {
                 if (response.id && response.name) {
-                    var newOption = new Option(response.first_name + ' ' + response.last_name, response.id, true, true);
+                    var newOption = new Option(response.first_name + ' ' + response.last_name + ' ' + response.phone_number, response.id, true, true);
                     $('#customer-select').append(newOption).trigger('change');
                 }
                 $("#modalAddCustomer").modal('hide')
@@ -354,30 +341,42 @@ $row.find("select.menu-item-variant").select2()
             const id = $(this).val()
             const index = $(this).data('id')
             const name = $(this).data('name')
-            if(name == 'category') {
-                getMenuItem(id).done(function (response) {
-                    const el = $(`.menu-item[data-id=${index}]`)
-                    el.select2('destroy')
-                    let html = `<option value="">Select Menu Item</option>`
-                    response.forEach(option => {
-                        html += `<option value="${option.id}">${option.name} (${option.current_price})</option>`
-                    })
-                    el.html(html)
-                    el.select2()
-                })
-            }
-            if(name == 'item') {
+            if (name == 'category') {
                 getMenuItemVariant(id).done(function (response) {
                     const el = $(`.menu-item-variant[data-id=${index}]`)
                     el.select2('destroy')
                     let html = `<option value="">Select Variant</option>`
                     response.forEach(option => {
-                        html += `<option value="${option.id}">${option.name} (${option.current_price})</option>`
+                        html += `<option value="${option.id}">${option.item.name} ${option.name} (${option.current_price})</option>`
                     })
                     el.html(html)
                     el.select2()
                 })
             }
+            // if(name == 'category') {
+            //     getMenuItem(id).done(function (response) {
+            //         const el = $(`.menu-item[data-id=${index}]`)
+            //         el.select2('destroy')
+            //         let html = `<option value="">Select Menu Item</option>`
+            //         response.forEach(option => {
+            //             html += `<option value="${option.id}">${option.name} (${option.current_price})</option>`
+            //         })
+            //         el.html(html)
+            //         el.select2()
+            //     })
+            // }
+            // if(name == 'item') {
+            //     getMenuItemVariant(id).done(function (response) {
+            //         const el = $(`.menu-item-variant[data-id=${index}]`)
+            //         el.select2('destroy')
+            //         let html = `<option value="">Select Variant</option>`
+            //         response.forEach(option => {
+            //             html += `<option value="${option.id}">${option.name} (${option.current_price})</option>`
+            //         })
+            //         el.html(html)
+            //         el.select2()
+            //     })
+            // }
         })
 
     });
