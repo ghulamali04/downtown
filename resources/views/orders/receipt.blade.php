@@ -236,7 +236,7 @@
         }
 
         async function printTestPage(pay = '') {
-            const printerName = document.getElementById('printer-select').value;
+            const printerName = '';//document.getElementById('printer-select').value;
 
             /*if (!printerName) {
                 showStatus('Please select a printer', true);
