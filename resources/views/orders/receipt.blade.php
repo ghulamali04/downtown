@@ -225,10 +225,7 @@
         Status message will appear here
     </div>
 </div>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-
         // Setup event listeners
         document.getElementById('test-btn').addEventListener('click', printTestPage);
         document.getElementById('pay-btn').addEventListener('click', printTestPage2);
@@ -271,7 +268,7 @@
                 showStatus('Error sending test page to server', true);
             }
         }
-    });
+
 </script>
 @stop
 

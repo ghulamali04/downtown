@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Validator;
@@ -263,6 +264,30 @@ class OrderController extends Controller
 
     public function printTestPage(Request $request, $order)
     {
+        $order = Order::with('items', 'customer', 'user')->where('id', $order)->first();
+
+        $response = Http::post('http://localhost:8080/print', [
+            'type' => 'receipt',
+            'printerType' => 'food', // or 'drink', 'receipt', 'all'
+            'data' => [
+                'restaurantName' => 'Downtown',
+                'orderNumber' => $order->id,
+                'customerName' => $order->customer->first_name . ' ' . $order->customer->last_name,
+                'items' => $order->items->map(function($item) {
+                    return [
+                        'name' => $item->name,
+                        'quantity' => $item->qty,
+                        'price' => $item->price
+                    ];
+                })->toArray()
+            ]
+        ]);
+
+        return response()->json([
+            "success" => true,
+            "message" => $response->body()
+        ]);
+
         $request->validate([
             'printer' => 'required|string',
         ]);
