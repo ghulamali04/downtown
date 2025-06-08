@@ -62,7 +62,7 @@
     <h1>Order#{{$order->id}}</h1>
 
 
-    <div class="form-group">
+    {{-- <div class="form-group">
         <label for="printer-select">Select Printer:</label>
         <select id="printer-select" class="form-select">
             @if(count($printers) > 0)
@@ -73,7 +73,7 @@
                 <option value="">No printers found</option>
             @endif
         </select>
-    </div>
+    </div> --}}
 
     <div class="receipt-items" id="receipt-items" style="font-family: monospace; font-size: 12px; width: 300px;">
         <div style="text-align: center;">
@@ -238,10 +238,10 @@
         async function printTestPage(pay = '') {
             const printerName = document.getElementById('printer-select').value;
 
-            if (!printerName) {
+            /*if (!printerName) {
                 showStatus('Please select a printer', true);
                 return;
-            }
+            }*/
 
             try {
                 const response = await fetch('{{url('')}}/order/receipt/print/{{$order->id}}', {
