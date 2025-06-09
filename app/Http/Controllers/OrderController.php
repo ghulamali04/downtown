@@ -269,7 +269,7 @@ class OrderController extends Controller
     {
         $order = Order::with('items', 'customer', 'user')->where('id', $order)->first();
 
-        $response = Http::post('http://192.168.1.1:8000/api/print/receipt', [
+        $response = Http::post('http://192.168.1.4:8000/api/print/receipt', [
             'order' => $order
         ]);
 
