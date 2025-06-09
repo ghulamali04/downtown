@@ -15,6 +15,9 @@ use App\Http\Middleware\AdminLevelAuth;
 use App\Http\Middleware\SuperAdminLevelAuth;
 use Illuminate\Support\Facades\Route;
 
+
+Route::post('/print/receipt', [PrintController::class, 'printReceipt']);
+
 Route::get('/', function () {
     return redirect('dashboard');
 });
