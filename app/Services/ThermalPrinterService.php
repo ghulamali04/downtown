@@ -12,7 +12,7 @@ class ThermalPrinterService
     private $printerIp;
     private $printerPort;
 
-    public function __construct($printerIp = '100.104.154.89', $printerPort = 9100)
+    public function __construct($printerIp = '192.168.1.100', $printerPort = 9100)
     {
         $this->printerIp = $printerIp;
         $this->printerPort = $printerPort;
@@ -21,7 +21,7 @@ class ThermalPrinterService
     /**
      * Print receipt for restaurant order
      */
-    public function printReceipt($orderData)
+    public function printReceipt($order): object
     {
         try {
             // Connect to thermal printer via network
@@ -31,171 +31,104 @@ class ThermalPrinterService
             // Restaurant header
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-            $printer->text($orderData['restaurant_name'] ?? 'RESTAURANT NAME');
-            $printer->feed();
-
-            $printer->selectPrintMode();
-            $printer->text($orderData['address'] ?? 'Restaurant Address');
-            $printer->feed();
-            $printer->text("Tel: " . ($orderData['phone'] ?? '000-000-0000'));
             $printer->feed(2);
+            // Header Section
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setEmphasis(true);
+            $printer->text("DOWNTOWN\n");
+            $printer->text("BAHAWALNAGAR\n");
+            $printer->setEmphasis(false);
+            $printer->text("Phone: 03202280987\n");
+            $printer->text("03132890988\n");
+            $printer->text("".$order->is_paid == 1 ? 'PAID' : 'UNPAID'."\n");
+            $printer->feed(1);
 
-            // Order details
+            // Token and Order Info
             $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $printer->text("Order #: " . $orderData['order_id']);
-            $printer->feed();
-            $printer->text("Date: " . date('Y-m-d H:i:s'));
-            $printer->feed();
+            $lineWidth = 42;
+            $orderIdText = "ORDER ID: " . $order->id;
+            $orderTypeText = "Order Type: " . ucfirst($order->type);
+            $spacesNeeded = $lineWidth - strlen($orderIdText) - strlen($orderTypeText);
+            $spaces = str_repeat(" ", max(1, $spacesNeeded));
+            $printer->text($orderIdText . $spaces);
+            $printer->setEmphasis(true);
+            $printer->text($orderTypeText . "\n");
+            $printer->setEmphasis(false);
+            $printer->text("Date: " . now()->format('d/m/Y H:i') . "\n");
+            $printer->text("User: " . $order->user->first_name . ' ' . $order->user->last_name . "\n");
+            $printer->feed(1);
 
-            if (isset($orderData['table'])) {
-                $printer->text("Table: " . $orderData['table']);
-                $printer->feed();
-            }
+            // Order Details Header
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text(str_repeat("-", 42) . "\n");
+            $printer->text("Order Detail\n");
+            $printer->text(str_repeat("-", 42) . "\n");
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
 
-            if (isset($orderData['customer'])) {
-                $printer->text("Customer: " . $orderData['customer']);
-                $printer->feed();
-            }
-
-            $printer->feed();
-            $printer->text(str_repeat('-', 32));
-            $printer->feed();
-
-            // Items
+            // Order Items
             $total = 0;
-            foreach ($orderData['items'] as $item) {
-                $itemTotal = $item['price'] * $item['quantity'];
+            $printer->text(sprintf("%-20s %-5s %-8s %8s\n", "Item", "Qty", "Rate", "Total"));
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text(str_repeat("-", 42) . "\n");
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+            foreach ($order->items as $item) {
+                $itemTotal = $item->price * $item->qty;
                 $total += $itemTotal;
 
-                $printer->text($item['name']);
-                $printer->feed();
-                $printer->text(sprintf("%dx%.2f%s%.2f",
-                    $item['quantity'],
-                    $item['price'],
-                    str_repeat(' ', 20 - strlen($item['quantity'] . 'x' . number_format($item['price'], 2))),
-                    $itemTotal
-                ));
-                $printer->feed();
+                // Item name on one line
+                $printer->text($item->name . "\n");
 
-                // Special instructions
-                if (!empty($item['notes'])) {
-                    $printer->text("  Note: " . $item['notes']);
-                    $printer->feed();
-                }
-            }
-
-            $printer->text(str_repeat('-', 32));
-            $printer->feed();
-
-            // Totals
-            if (isset($orderData['subtotal'])) {
-                $printer->text(sprintf("Subtotal:%s%.2f",
-                    str_repeat(' ', 21 - strlen('Subtotal:')),
-                    $orderData['subtotal']
-                ));
+                // Quantity, Rate, and Total on the next line with right-aligned amounts
+                $printer->text(sprintf("%-20s %-5s %-8s %8s\n", "", $item->qty, number_format($item->price, 2), number_format($itemTotal, 2)));
                 $printer->feed();
             }
 
-            if (isset($orderData['tax'])) {
-                $printer->text(sprintf("Tax:%s%.2f",
-                    str_repeat(' ', 25 - strlen('Tax:')),
-                    $orderData['tax']
-                ));
-                $printer->feed();
-            }
+            // Subtotal, VAT/GST, and Grand Total
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text(str_repeat("-", 42) . "\n");
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+            $subTotalText = "Sub Total";
+            $subTotalValue = number_format($total, 2);
+            $printer->text(sprintf("%-30s %8s Rs\n", $subTotalText, $subTotalValue));
 
-            if (isset($orderData['discount'])) {
-                $printer->text(sprintf("Discount:%s-%.2f",
-                    str_repeat(' ', 20 - strlen('Discount:')),
-                    $orderData['discount']
-                ));
-                $printer->feed();
-            }
+            $vatText = "VAT/GST (0% on Cash)";
+            $vatValue = "0.00";
+            $printer->text(sprintf("%-30s %8s Rs\n", $vatText, $vatValue));
 
-            $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-            $printer->text(sprintf("TOTAL:%s%.2f",
-                str_repeat(' ', 15 - strlen('TOTAL:')),
-                $total
-            ));
-            $printer->selectPrintMode();
-            $printer->feed(2);
+            $grandTotalText = "GRAND TOTAL";
+            $grandTotalValue = number_format($total, 2);
+            $printer->setEmphasis(true);
+            $printer->text(sprintf("%-30s %8s Rs\n", $grandTotalText, $grandTotalValue));
+            $printer->setEmphasis(false);
+            $printer->feed(1);
 
-            // Payment info
-            if (isset($orderData['payment_method'])) {
-                $printer->text("Payment: " . $orderData['payment_method']);
-                $printer->feed();
-            }
+            // Customer Details
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->text("Customer Detail\n");
+            $printer->text(str_repeat("-", 42) . "\n");
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+            $printer->text("".$order->customer->phone_number."\n");
+            $printer->text("Delivery Address: ".$order->customer->address."\n");
+            $printer->text("Order-Taker: ".$order->user->first_name.' '.$order->user->last_name."\n");
+            $printer->feed(1);
 
             // Footer
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->feed();
-            $printer->text("Thank you for dining with us!");
-            $printer->feed(2);
-
-            // Cut paper
-            $printer->cut();
-            $printer->close();
-
-            return ['success' => true, 'message' => 'Receipt printed successfully'];
-
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => 'Print error: ' . $e->getMessage()];
-        }
-    }
-
-    /**
-     * Print kitchen order
-     */
-    public function printKitchenOrder($orderData)
-    {
-        try {
-            $connector = new NetworkPrintConnector($this->printerIp, $this->printerPort);
-            $printer = new Printer($connector);
-
-            $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-            $printer->text("KITCHEN ORDER");
-            $printer->selectPrintMode();
-            $printer->feed(2);
-
-            $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $printer->text("Order #: " . $orderData['order_id']);
-            $printer->feed();
-            $printer->text("Time: " . date('H:i:s'));
-            $printer->feed();
-
-            if (isset($orderData['table'])) {
-                $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-                $printer->text("TABLE: " . $orderData['table']);
-                $printer->selectPrintMode();
-                $printer->feed(2);
-            }
-
-            $printer->text(str_repeat('=', 32));
-            $printer->feed();
-
-            foreach ($orderData['items'] as $item) {
-                $printer->selectPrintMode(Printer::MODE_EMPHASIZED);
-                $printer->text($item['quantity'] . "x " . $item['name']);
-                $printer->selectPrintMode();
-                $printer->feed();
-
-                if (!empty($item['notes'])) {
-                    $printer->text(">>> " . $item['notes'] . " <<<");
-                    $printer->feed();
-                }
-                $printer->feed();
-            }
-
-            $printer->text(str_repeat('=', 32));
+            $printer->text(str_repeat("-", 42) . "\n");
+            $printer->text("Printed: " . now()->format('d/m/Y H:i') . "\n");
+            $printer->text("FOR ANY COMPLAINT & SUGGESTIONS\n");
+            $printer->text("PLEASE CONTACT US @ (063) 2280-988\n");
+            $printer->text("Software By Bitzsol\n");
             $printer->feed(3);
+
+            // Finalize
             $printer->cut();
             $printer->close();
 
-            return ['success' => true, 'message' => 'Kitchen order printed successfully'];
+            return (object)['success' => true, 'message' => 'Receipt printed successfully'];
 
         } catch (\Exception $e) {
-            return ['success' => false, 'message' => 'Print error: ' . $e->getMessage()];
+            return (object)['success' => false, 'message' => 'Print error: ' . $e->getMessage()];
         }
     }
 }
