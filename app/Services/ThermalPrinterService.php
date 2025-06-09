@@ -12,7 +12,7 @@ class ThermalPrinterService
     private $printerIp;
     private $printerPort;
 
-    public function __construct($printerIp = '192.168.1.100', $printerPort = 9100)
+    public function __construct($printerIp = '100.104.154.89', $printerPort = 9100)
     {
         $this->printerIp = $printerIp;
         $this->printerPort = $printerPort;
