@@ -490,20 +490,20 @@ class OrderController extends Controller
 
             // $printer->feed(3);
             // $printer->cut();
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to print test page',
-                'error' => $e->getMessage(),
-            ], 500);
-        } finally {
-            $printer->close();
-    //shell_exec("lprm -P $printerName 2>&1");
-        }
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to print test page',
+    //             'error' => $e->getMessage(),
+    //         ], 500);
+    //     } finally {
+    //         $printer->close();
+    // //shell_exec("lprm -P $printerName 2>&1");
+    //     }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Test page sent to printer successfully ',
-        ]);
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Test page sent to printer successfully ',
+    //     ]);
     }
 }
