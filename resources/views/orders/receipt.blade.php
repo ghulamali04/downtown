@@ -236,37 +236,59 @@
         }
 
         async function printTestPage(pay = '') {
-            const printerName = '';//document.getElementById('printer-select').value;
+            fetch('/print/receipt', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+    },
+    body: JSON.stringify({
+        order_id: '12345',
+        table: '5',
+        customer: 'John Doe',
+        items: [
+            {name: 'Burger', quantity: 2, price: 12.99, notes: 'No onions'},
+            {name: 'Fries', quantity: 1, price: 4.99, notes: ''}
+        ],
+        subtotal: 30.97,
+        tax: 2.48,
+        payment_method: 'Cash'
+    })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+
+            //const printerName = '';//document.getElementById('printer-select').value;
 
             /*if (!printerName) {
                 showStatus('Please select a printer', true);
                 return;
             }*/
 
-            try {
-                const response = await fetch('{{url('')}}/order/receipt/print/{{$order->id}}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        printer: printerName,
-                        type: pay
-                    })
-                });
+            // try {
+            //     const response = await fetch('{{url('')}}/order/receipt/print/{{$order->id}}', {
+            //         method: 'POST',
+            //         headers: {
+            //             'Content-Type': 'application/json',
+            //             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            //         },
+            //         body: JSON.stringify({
+            //             printer: printerName,
+            //             type: pay
+            //         })
+            //     });
 
-                const result = await response.json();
+            //     const result = await response.json();
 
-                if (result.success) {
-                    showStatus('Test page sent to printer successfully');
-                } else {
-                    showStatus(`Printing failed: ${result.message}`, true);
-                }
-            } catch (error) {
-                console.error('Error sending test page:', error);
-                showStatus('Error sending test page to server', true);
-            }
+            //     if (result.success) {
+            //         showStatus('Test page sent to printer successfully');
+            //     } else {
+            //         showStatus(`Printing failed: ${result.message}`, true);
+            //     }
+            // } catch (error) {
+            //     console.error('Error sending test page:', error);
+            //     showStatus('Error sending test page to server', true);
+            // }
         }
 
 </script>

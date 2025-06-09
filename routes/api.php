@@ -1,0 +1,18 @@
+<?php
+
+use App\Models\Order;
+use Illuminate\Support\Facades\Route;
+
+// Get new print orders
+Route::get('/print-orders', function () {
+    return response()->json([
+        'orders' => Order::where('printed', 0)->get()
+    ]);
+});
+
+// Mark order as printed
+Route::post('/print-orders/{order}/printed', function (Order $order) {
+    $order->printed = 1;
+    $order->save();
+    return response()->json(['success' => true]);
+});

@@ -9,10 +9,14 @@ use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuItemVariantController;
 use App\Http\Controllers\OpenApiController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PrintController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\AdminLevelAuth;
 use App\Http\Middleware\SuperAdminLevelAuth;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/print/receipt', [PrintController::class, 'printReceipt']);
+Route::post('/print/kitchen', [PrintController::class, 'printKitchenOrder']);
 
 Route::get('/', function () {
     return redirect('dashboard');
