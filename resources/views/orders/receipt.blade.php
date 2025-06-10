@@ -266,7 +266,7 @@
             }*/
 
             try {
-                const response = await fetch('{{url('')}}/print/receipt?order_id={{$order->id}}', {
+                const response = await fetch('{{url('')}}/print/receipt?order_id={{$order->id}}&type='+pay, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

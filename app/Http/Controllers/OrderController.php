@@ -510,6 +510,13 @@ class OrderController extends Controller
     public function printReceipt(Request $request)
     {
         $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
+        if ($request->type == 'paid') {
+            $order->is_paid = 1;
+            $order->save();
+        } else {
+            $order->is_paid = 0;
+            $order->save();
+        }
         $response = Http::timeout(60)
         // ->withOptions([
         //     'curl' => [
