@@ -518,9 +518,6 @@ class OrderController extends Controller
                 CURLOPT_DNS_SERVERS => '1.1.1.1,8.8.8.8', // Use Cloudflare/Google DNS
             ],
         ])
-        ->withHeaders([
-            'content-type' => 'application/json'
-        ])
         ->post('https://dt.thedowntownrestaurant.com/open/print/receipt', [
             'order' => $order
         ]);
