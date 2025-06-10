@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use App\Services\ThermalPrinterService;
+use Illuminate\Support\Facades\Log;
 
 class PrintController extends Controller
 {
@@ -32,8 +33,10 @@ class PrintController extends Controller
         //     'payment_method' => $request->input('payment_method')
         // ];
 
+        //$order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
         $order = $request->order;
 
+        //Log::info('Order Data: ', [$order]);
 
         $result = $this->printerService->printReceipt($order);
 

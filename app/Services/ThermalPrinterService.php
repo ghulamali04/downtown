@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\Printer;
@@ -12,7 +13,7 @@ class ThermalPrinterService
     private $printerIp;
     private $printerPort;
 
-    public function __construct($printerIp = '192.168.1.100', $printerPort = 9100)
+    public function __construct($printerIp = '192.168.1.101', $printerPort = 9100)
     {
         $this->printerIp = $printerIp;
         $this->printerPort = $printerPort;
@@ -21,8 +22,14 @@ class ThermalPrinterService
     /**
      * Print receipt for restaurant order
      */
-    public function printReceipt($order)
+    public function printReceipt($orderData)
 {
+    if (isset($orderData->stdClass)) {
+        $order = $orderData->stdClass;
+    } else {
+        $order = $orderData;
+    }
+
     try {
         // Connect to thermal printer via network
         $connector = new NetworkPrintConnector($this->printerIp, $this->printerPort);
@@ -42,14 +49,14 @@ class ThermalPrinterService
         $printer->text("Tel: (063) 2280-988\n");
         $printer->text("Phone: 03202280987\n");
         $printer->text("03132890988\n");
-        $printer->text(($order->is_paid == 1 ? 'PAID' : 'UNPAID') . "\n");
+        $printer->text((@$order["is_paid"] == 1 ? 'PAID' : 'UNPAID') . "\n");
         $printer->feed(1);
 
         // Token and Order Info
         $printer->setJustification(Printer::JUSTIFY_LEFT);
         $lineWidth = 44;
-        $orderIdText = "ORDER ID: " . $order->id;
-        $orderTypeText = "Order Type: " . ucfirst($order->type);
+        $orderIdText = "ORDER ID: " . @$order["id"];
+        $orderTypeText = "Order Type: " . ucfirst(@$order["type"]);
         $spacesNeeded = $lineWidth - strlen($orderIdText) - strlen($orderTypeText);
         $spaces = str_repeat(" ", max(1, $spacesNeeded));
         $printer->text($orderIdText . $spaces);
@@ -57,8 +64,7 @@ class ThermalPrinterService
         $printer->text($orderTypeText . "\n");
         $printer->setEmphasis(false);
         $printer->text("Date: " . now()->format('d/m/Y H:i') . "\n");
-        $printer->text("User: " . $order->user->first_name . ' ' . $order->user->last_name . "\n");
-        $printer->text('Table: ' . $order->table_number. "\n");
+        $printer->text("User: " . @$order["user"]["first_name"] . ' ' . @$order["user"]["last_name"] . "\n");
         $printer->feed(1);
 
         // Order Details Header
@@ -74,18 +80,20 @@ class ThermalPrinterService
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $printer->text(str_repeat("-", 44) . "\n");
         $printer->setJustification(Printer::JUSTIFY_LEFT);
-
-        foreach ($order->items as $item) {
-            $itemTotal = $item->price * $item->qty;
+if (@$order["items"]) {
+        foreach (@$order["items"] as $item) {
+            $itemTotal = @$item["price"] * @$item["qty"];
             $total += $itemTotal;
 
             // Item name on one line
-            $printer->text($item->name . "\n");
+            $printer->text(@$item["name"] . "\n");
 
             // Quantity, Rate, and Total on the next line with right-aligned amounts
-            $printer->text(sprintf("%-20s %-5s %-8s %8s\n", "", $item->qty, number_format($item->price, 2), number_format($itemTotal, 2)));
+            $printer->text(sprintf("%-20s %-5s %-8s %8s\n", "", @$item["qty"], number_format(@$item["price"], 2), number_format($itemTotal, 2)));
             $printer->feed();
         }
+
+    }
 
         // Subtotal, VAT/GST, and Grand Total
         $printer->setJustification(Printer::JUSTIFY_CENTER);
@@ -112,9 +120,9 @@ class ThermalPrinterService
         $printer->text("Customer Detail\n");
         $printer->text(str_repeat("-", 44) . "\n");
         $printer->setJustification(Printer::JUSTIFY_LEFT);
-        $printer->text($order->customer->phone_number . "\n");
-        $printer->text("Delivery Address: " . $order->customer->address . "\n");
-        $printer->text("Order-Taker: " . $order->user->first_name . ' ' . $order->user->last_name . "\n");
+        $printer->text(@$order["customer"]["phone_number"]. "\n");
+        $printer->text("Delivery Address: " . @$order["customer"]["address"] . "\n");
+        $printer->text("Order-Taker: " . @$order["user"]["first_name"] . ' ' . @$order["user"]["last_name"] . "\n");
         $printer->feed(1);
 
         // Footer

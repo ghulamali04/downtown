@@ -1,0 +1,6 @@
+tunnel: 5f4c85cb-530d-42f6-8b43-fb16e12aacf0
+credentials-file: /path/to/.cloudflared/5f4c85cb-530d-42f6-8b43-fb16e12aacf0.json
+ingress:
+  - hostname: tunnel.thedowntownrestaurant.com
+    service: http://localhost:8080
+  - service: http_status:404
