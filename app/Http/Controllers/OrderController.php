@@ -510,9 +510,10 @@ class OrderController extends Controller
     public function printReceipt(Request $request)
     {
         $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
-        $response = Http::timeout(60)->withOptions([
+        $response = Http::timeout(60)
+        ->retry(0)
+        ->withOptions([
             'verify' => false,
-            'retry' => false,
             'curl' => [
                 CURLOPT_DNS_SERVERS => '1.1.1.1,8.8.8.8', // Use Cloudflare/Google DNS
             ],
