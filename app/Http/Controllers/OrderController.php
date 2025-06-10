@@ -511,20 +511,23 @@ class OrderController extends Controller
     {
         $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
         $response = Http::timeout(60)
-        ->retry(0)
-        ->withOptions([
-            'verify' => false,
-            'curl' => [
-                CURLOPT_DNS_SERVERS => '1.1.1.1,8.8.8.8', // Use Cloudflare/Google DNS
-            ],
-        ])
+        // ->withOptions([
+        //     'curl' => [
+        //         CURLOPT_DNS_SERVERS => '1.1.1.1,8.8.8.8', // Use Cloudflare/Google DNS
+        //     ],
+        // ])
         ->post('https://dt.thedowntownrestaurant.com/open/print/receipt', [
             'order' => $order
         ]);
 
+        if ($response->successful()) {
+            return response()->json([
+                "success" => true
+            ]);
+        }
+
         return response()->json([
-            "success" => true,
-            "message" => $response->getBody()->rewind()
+            "success" => false
         ]);
     }
 }
