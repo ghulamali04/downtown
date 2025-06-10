@@ -510,7 +510,15 @@ class OrderController extends Controller
     public function printReceipt(Request $request)
     {
         $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
-        $response = Http::post('https://dt.thedowntownrestaurant.com/open/print/receipt', [
+        $response = Http::withOptions([
+            'curl' => [
+                CURLOPT_DNS_SERVERS => '1.1.1.1,8.8.8.8', // Use Cloudflare/Google DNS
+            ],
+        ])
+        ->withHeaders([
+            'content-type' => 'application/json'
+        ])
+        ->post('https://dt.thedowntownrestaurant.com/open/print/receipt', [
             'order' => $order
         ]);
 
