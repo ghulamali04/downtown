@@ -527,7 +527,7 @@ class OrderController extends Controller
 
         return response()->json([
             "success" => true,
-            "message" => $response->body()
+            "message" => $response->getBody()->rewind()
         ]);
     }
 }
