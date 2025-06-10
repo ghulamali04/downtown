@@ -32,7 +32,7 @@ class PrintController extends Controller
         //     'payment_method' => $request->input('payment_method')
         // ];
 
-        $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
+        $order = $request->order;
 
 
         $result = $this->printerService->printReceipt($order);

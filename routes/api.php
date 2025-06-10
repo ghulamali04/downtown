@@ -5,6 +5,7 @@ use App\Http\Controllers\PrintController;
 use Illuminate\Support\Facades\Route;
 
 
+Route::post('/print/receipt', [PrintController::class, 'printReceipt']);
 
 // Get new print orders
 Route::get('/print-orders', function () {

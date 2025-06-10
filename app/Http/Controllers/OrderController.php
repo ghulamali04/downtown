@@ -506,4 +506,17 @@ class OrderController extends Controller
     //         'message' => 'Test page sent to printer successfully ',
     //     ]);
     }
+
+    public function printReceipt(Request $request)
+    {
+        $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
+        $response = Http::post('https://attitude-instructional-picks-authority.trycloudflare.com/api/print/receipt', [
+            'order' => $order
+        ]);
+
+        return response()->json([
+            "success" => true,
+            "message" => $response->body()
+        ]);
+    }
 }
