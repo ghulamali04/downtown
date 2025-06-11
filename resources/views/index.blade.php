@@ -1426,7 +1426,7 @@ function formatChildRow(order) {
         className: 'details-control cursor-pointer',
         orderable: false,
         data: null,
-        defaultContent: '<i class="ri-arrow-down-s-line ri-lg"></i>',
+        defaultContent: '<i class="ri-arrow-down-s-line ri-2xl"></i>',
     },
     { "data": "id" },
             { "data": "type" },
@@ -1452,22 +1452,22 @@ function formatChildRow(order) {
                 "render": function (data, type, row) {
                     return `
                         ${row.status === 'pending' ? `
-                                <a class="status-btn text-success" href="javascript:;" data-id="${data}" data-status="completed" target="_blank">
-                                    <i class="ri-chat-check-line ri-lg"></i>
+                                <a class="status-btn text-success" href="javascript:;" data-id="${data}" data-status="completed">
+                                    <i class="ri-chat-check-line ri-2xl"></i>
                                 </a>
-                                <a class="status-btn text-danger" href="javascript:;" data-id="${data}" data-status="cancelled" target="_blank">
-                                    <i class="ri-chat-delete-line ri-lg"></i>
+                                <a class="status-btn text-danger" href="javascript:;" data-id="${data}" data-status="cancelled">
+                                    <i class="ri-chat-delete-line ri-2xl"></i>
                                 </a>
-                                 <a class="receipt-btn text-dark" href="javascript:;" data-id="${data}" target="_blank">
-                                    <i class=" ri-printer-line ri-lg"></i>
+                                 <a class="receipt-btn text-dark" href="javascript:;" data-id="${data}">
+                                    <i class=" ri-printer-line ri-2xl"></i>
                                     </a>
-<a class="edit-btn" href="javascript:;" data-id="${data}" target="_blank">
-                                    <i class="ri-edit-2-line ri-lg"></i>
+<a class="edit-btn" href="javascript:;" data-id="${data}">
+                                    <i class="ri-edit-2-line ri-2xl"></i>
                                 </a>
                                 ` : ``}
                                 @if(Auth::user()->role === 'superadmin')
                                 <a class=" text-danger delete-btn" href="javascript:;void" data-id="${data}">
-                                    <i class="ri-delete-bin-2-line ri-lg"></i>
+                                    <i class="ri-delete-bin-2-line ri-2xl"></i>
                                 </a>
                                 @endif
                     `;

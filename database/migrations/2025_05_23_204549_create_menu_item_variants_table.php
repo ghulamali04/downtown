@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->softDeletes();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->decimal('current_price', 19, 2)->default(0);
             $table->unsignedBigInteger('menu_item_id')->index();
             $table->foreign('menu_item_id', 'fk_menu_item_variant_menu_item_id')

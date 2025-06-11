@@ -226,17 +226,32 @@
     </div>
 </div>
 <script>
+    const receiptBtn = document.getElementById('test-btn')
+    const payBtn = document.getElementById('pay-btn')
         // Setup event listeners
-        document.getElementById('test-btn').addEventListener('click', printTestPage);
-        document.getElementById('pay-btn').addEventListener('click', printTestPage2);
+        receiptBtn.addEventListener('click', printTestPage);
+        payBtn.addEventListener('click', printTestPage2);
 
 
         async function printTestPage2 () {
-            printTestPage('paid')
+            const c = confirm("Are you sure you want to print paid receipt?")
+            if (c) {
+                payBtn.innerHTML = '<span class="mr-1">Processing...</span><i class="ri-loader-4-line ri-spin"></i>'
+            printPage('paid')
+            }
         }
 
-        async function printTestPage(pay = '') {
-//             fetch('/print/receipt', {
+        async function printTestPage() {
+            const c = confirm("Are you sure you want to print unpaid receipt?")
+            if (c) {
+                receiptBtn.innerHTML = '<span class="mr-1">Processing...</span><i class="ri-loader-4-line ri-spin"></i>'
+            printPage('')
+            }
+        }
+
+async function printPage(pay = '')
+{
+    //             fetch('/print/receipt', {
 //     method: 'POST',
 //     headers: {
 //         'Content-Type': 'application/json',
@@ -258,42 +273,43 @@
 // .then(response => response.json())
 // .then(data => console.log(data));
 
-            const printerName = '';//document.getElementById('printer-select').value;
+const printerName = '';//document.getElementById('printer-select').value;
 
-            /*if (!printerName) {
-                showStatus('Please select a printer', true);
-                return;
-            }*/
+/*if (!printerName) {
+    showStatus('Please select a printer', true);
+    return;
+}*/
 
-            try {
-                const response = await fetch('{{url('')}}/print/receipt?order_id={{$order->id}}&type='+pay, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        printer: printerName,
-                        type: pay
-                    })
-                });
+try {
+    const response = await fetch('{{url('')}}/print/receipt?order_id={{$order->id}}&type='+pay, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            printer: printerName,
+            type: pay
+        })
+    });
 
-                const result = await response.json();
+    const result = await response.json();
 
-                if (result.success) {
-                    showStatus('Test page sent to printer successfully');
-                } else {
-                    showStatus(`Printing failed: ${result.message}`, true);
-                }
-            } catch (error) {
-                console.error('Error sending test page:', error);
-                showStatus('Error sending test page to server', true);
-            }
-        }
-
+    if (result.success) {
+        showStatus('Test page sent to printer successfully');
+        showSuccessMessage('Receipt sent to printer successfully');
+    } else {
+        showStatus(`Printing failed: ${result.message}`, true);
+        showErrorMessage('Unable to send receipt to printer');
+    }
+} catch (error) {
+    console.error('Error sending test page:', error);
+    showErrorMessage('Unable to send receipt to printer');
+} finally {
+    receiptBtn.innerHTML = 'Print Receipt'
+    payBtn.innerHTML = 'Pay & Print Receipt'
+}
+}
 </script>
 @stop
 
-@section('scripts')
-
-@stop

@@ -11,7 +11,7 @@ class OpenApiController extends Controller
 {
     public function getMenuCategories(Request $request)
     {
-        $categories = MenuCategory::all();
+        $categories = MenuCategory::get();
         return response()->json($categories);
     }
 
@@ -23,7 +23,11 @@ class OpenApiController extends Controller
 
     public function getMenuItemVariants(Request $request)
     {
-        $variants = MenuItemVariant::with(['item'])->where('menu_item_id', $request->menu_item_id)->get();
+        $variants = MenuItemVariant::with(['item'])
+        ->whereHas('item', function ($join) use ($request) {
+            $join->where('menu_category_id', $request->menu_category_id);
+        })
+        ->get();
         return response()->json($variants);
     }
 }

@@ -38,6 +38,9 @@
        .dts_label {
             display: none !important
         }
+        .ri-2xl {
+            font-size: 2em;
+        }
     </style>
     @yield('css')
 </head>

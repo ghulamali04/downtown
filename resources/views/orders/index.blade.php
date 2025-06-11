@@ -32,8 +32,8 @@
             <div class="card-header align-items-center d-flex">
                 <h4 class="card-title mb-0 flex-grow-1">Order</h4>
                 <div class="flex-shrink-0">
-                    <a class="btn btn-sm btn-primary" href="{{route('order.create')}}">Create New</a>
-                    <button class="btn btn-sm btn-secondary" id="export">Export</button>
+                    <a class="btn btn-primary" href="{{route('order.create')}}">Create New</a>
+                    <button class="btn btn-secondary" id="export">Export</button>
                 </div>
             </div><!-- end card header -->
             <div class="card-body ">
@@ -98,8 +98,8 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <button class="btn btn-primary btn-sm" type="submit">Filter</button>
-                            <button class="btn btn-warning btn-sm" type="reset" onclick="window.location.reload();">Discard</button>
+                            <button class="btn btn-primary " type="submit">Filter</button>
+                            <button class="btn btn-warning " type="reset" onclick="window.location.reload();">Discard</button>
                         </div>
                     </div>
                 </form>
@@ -229,21 +229,21 @@
                 "render": function (data, type, row) {
                     return `
                         ${row.status === 'pending' ? `
-                        <a class="status-btn text-success" href="javascript:;" data-id="${data}" data-status="completed" target="_blank">
-                                    <i class="ri-chat-check-line ri-lg"></i>
+                        <a class="status-btn text-success" href="javascript:;" data-id="${data}" data-status="completed">
+                                    <i class="ri-chat-check-line ri-2xl"></i>
                                 </a>
-                                <a class="status-btn text-danger" href="javascript:;" data-id="${data}" data-status="cancelled" target="_blank">
-                                    <i class="ri-chat-delete-line ri-lg"></i>
+                                <a class="status-btn text-danger" href="javascript:;" data-id="${data}" data-status="cancelled">
+                                    <i class="ri-chat-delete-line ri-2xl"></i>
                                 </a>
-                                <a class="receipt-btn text-dark" href="javascript:;" data-id="${data}" target="_blank">
-                                    <i class=" ri-printer-line ri-lg"></i>
+                                <a class="receipt-btn text-dark" href="javascript:;" data-id="${data}">
+                                    <i class=" ri-printer-line ri-2xl"></i>
                                     </a>
-                        <a class="edit-btn" href="javascript:;" data-id="${data}" target="_blank">
-                                    <i class="ri-edit-2-line ri-lg"></i>
+                        <a class="edit-btn" href="javascript:;" data-id="${data}">
+                                    <i class="ri-edit-2-line ri-2xl"></i>
                                 </a>` : ``}
                                 @if(Auth::user()->role === 'superadmin')
                                 <a class=" text-danger delete-btn" href="javascript:;void" data-id="${data}">
-                                    <i class="ri-delete-bin-2-line ri-lg"></i>
+                                    <i class="ri-delete-bin-2-line ri-2xl"></i>
                                 </a>
                                 @endif
                     `;

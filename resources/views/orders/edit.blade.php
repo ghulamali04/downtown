@@ -54,7 +54,18 @@
 
                         <div class="col-md-4 col-sm-6 col-12 mb-3">
                             <label class="form-label">Table Number</label>
-                            <input type="text" class="form-control @error('table_number') is-invalid @enderror" name="table_number" value="{{$order->table_number}}" placeholder="Table Number">
+                            <select class="form-select select2 @error('table_number') is-invalid @enderror" name="table_number">
+                                <option value="">Select</option>
+                                @for ($i = 1; $i <= 20; $i++)
+                                    <option value="G{{$i}}">G{{$i}}</option>
+                                @endfor
+                                @for ($i = 1; $i <= 20; $i++)
+                                    <option value="F{{$i}}">F{{$i}}</option>
+                                @endfor
+                                @for ($i = 1; $i <= 20; $i++)
+                                    <option value="T{{$i}}">T{{$i}}</option>
+                                @endfor
+                            </select>
                             @error('table_number')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -131,7 +142,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <button type="button" class="btn btn-sm btn-primary" data-repeater-create>Add Order Item</button>
+                                    <button type="button" class="btn btn-primary" data-repeater-create>Add Order Item</button>
                                 </div>
                             </div>
                             @if ($errors->has('menuItems.*.item'))

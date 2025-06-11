@@ -32,7 +32,7 @@
             <div class="card-header align-items-center d-flex">
                 <h4 class="card-title mb-0 flex-grow-1">Menu</h4>
                 <div class="flex-shrink-0">
-                    <a class="btn btn-sm btn-primary" href="{{route('menu.create')}}">Create New</a>
+                    <a class="btn btn-primary" href="{{route('menu.create')}}">Create New</a>
                 </div>
             </div><!-- end card header -->
             <div class="card-body ">
@@ -106,11 +106,11 @@
                 "data" : "action",
                 "render": function (data, type, row) {
                     return `
-                        <a class="edit-btn" href="javascript:;" data-id="${data}" target="_blank">
-                                    <i class="ri-edit-2-line ri-lg"></i>
+                        <a class="edit-btn" href="javascript:;" data-id="${data}" >
+                                    <i class="ri-edit-2-line ri-2xl"></i>
                                 </a>
                                 <a class=" text-danger delete-btn" href="javascript:;void" data-id="${data}">
-                                    <i class="ri-delete-bin-2-line ri-lg"></i>
+                                    <i class="ri-delete-bin-2-line ri-2xl"></i>
                                 </a>
                     `;
                 }

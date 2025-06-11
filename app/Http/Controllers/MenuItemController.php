@@ -27,7 +27,7 @@ class MenuItemController extends Controller
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'numeric'],
+            //'price' => ['required', 'numeric'],
             'menu_category_id' => ['required', 'exists:menu_categories,id']
         ])->validate();
     }

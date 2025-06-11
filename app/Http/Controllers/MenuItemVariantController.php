@@ -26,7 +26,7 @@ class MenuItemVariantController extends Controller
     private function menuItemValidation($input)
     {
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:1'],
             'menu_item_id' => ['required', 'exists:menu_items,id']
         ])->validate();
