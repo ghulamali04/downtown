@@ -91,7 +91,11 @@
                 <div><strong>Order Type: {{ ucfirst($order->type) }}</strong></div>
             </div>
             Date: {{ now()->format('d/m/Y H:i') }}<br>
-            User: {{ $order->user->first_name }} {{ $order->user->last_name }}<br>
+            <div style="display: flex; justify-content: space-between;">
+                <div>User: {{ $order->user->first_name }} {{ $order->user->last_name }}</div>
+                <div><strong>Table: {{ $order->table_number }}</strong></div>
+            </div>
+
             <br>
            <div style="text-align: center;">
             -------------------------------------<br>
