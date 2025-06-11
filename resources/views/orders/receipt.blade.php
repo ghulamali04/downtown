@@ -295,7 +295,7 @@ try {
 
     const result = await response.json();
 
-    if (result.success) {
+    if (result.success == 'true' || result.success == true || result.success) {
         showStatus('Test page sent to printer successfully');
         showSuccessMessage('Receipt sent to printer successfully');
     } else {
