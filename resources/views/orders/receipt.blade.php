@@ -296,10 +296,8 @@ try {
     const result = await response.json();
 
     if (result.success == 'true' || result.success == true || result.success) {
-        showStatus('Test page sent to printer successfully');
         showSuccessMessage('Receipt sent to printer successfully');
     } else {
-        showStatus(`Printing failed: ${result.message}`, true);
         showErrorMessage('Unable to send receipt to printer');
     }
 } catch (error) {
