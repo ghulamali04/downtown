@@ -1,22 +1,20 @@
 <?php
 
 use App\Models\Order;
-use App\Http\Controllers\PrintController;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
-
-// Route::post('/print/receipt', [PrintController::class, 'printReceipt']);
-
-// Get new print orders
 Route::get('/print-orders', function () {
-    return response()->json([
-        'orders' => Order::where('printed', 0)->get()
-    ]);
-});
+    $queued = Cache::get('print_queue', []);
 
-// Mark order as printed
-Route::post('/print-orders/{order}/printed', function (Order $order) {
-    $order->printed = 1;
-    $order->save();
-    return response()->json(['success' => true]);
+    if (empty($queued)) {
+        return response()->json(['status' => 'no_data']);
+    }
+
+    $orderId = array_shift($queued);
+    $orderData = Cache::pull("print_order_{$orderId}");
+
+    Cache::put('print_queue', $queued);
+
+    return response()->json(['order' => $orderData]);
 });

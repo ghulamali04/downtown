@@ -90,8 +90,9 @@ class CustomerController extends Controller
 
         return redirect()->back()->with('success', 'Customer successfully updated');
     }
-    public function destroy(Customer $customer)
+    public function destroy($customer)
     {
+        $customer = Customer::findOrFail($customer);
         $customer->delete();
         return new JsonResponse([
             "status" => "success",

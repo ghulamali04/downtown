@@ -63,6 +63,18 @@
                             @enderror
                         </div>
                         <div class=" col-md-4 col-sm-6 col-12 mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select @error('category') is-invalid @enderror" name="category">
+                                <option value="">Select</option>
+                                <option value="Bar" {{$tracking->category == 'Bar' ? 'selected' : ''}}>Bar</option>
+                                <option value="Kitchen" {{$tracking->category == 'Kitchen' ? 'selected' : ''}}>Kitchen</option>
+                                <option value="Bakery" {{$tracking->category == 'Bakery' ? 'selected' : ''}}>Bakery</option>
+                            </select>
+                            @error('category')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class=" col-md-4 col-sm-6 col-12 mb-3">
                             <label class="form-label">Amount</label>
                             <input type="text" class="form-control @error('amount') is-invalid @enderror" name="amount"
                                 value="{{$tracking->amount}}" placeholder="Amount">

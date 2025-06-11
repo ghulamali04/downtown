@@ -67,8 +67,9 @@ class MenuItemVariantController extends Controller
         ]);
         return redirect()->back()->with('success', 'Menu Item Variant successfully updated');
     }
-    public function destroy(MenuItemVariant $menuItem)
+    public function destroy($menuItem)
     {
+        $menuItem = MenuItemVariant::findOrFail($menuItem);
         $menuItem->delete();
         return new JsonResponse([
             "status" => "success",

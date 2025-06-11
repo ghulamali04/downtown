@@ -219,10 +219,10 @@
 
                         @if (Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
                         <li class="nav-item">
-                            <a class="nav-link menu-link {{Request::is('inventory/*') ? 'active' : ''}}" href="#sidebarDashboards" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarDashboards">
-                                <i class="ri-store-line"></i> <span data-key="t-dashboards">Inventory</span>
+                            <a class="nav-link menu-link {{Request::is('inventory/*') ? 'active' : ''}}" href="#sidebarInventory" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarInventory">
+                                <i class="ri-store-line"></i> <span data-key="t-inventory">Inventory</span>
                             </a>
-                            <div class="collapse menu-dropdown {{Request::is('inventory/*') ? 'show' : ''}}" id="sidebarDashboards">
+                            <div class="collapse menu-dropdown {{Request::is('inventory/*') ? 'show' : ''}}" id="sidebarInventory">
                                 <ul class="nav nav-sm flex-column">
                                     <li class="nav-item">
                                         <a href="{{route('item.index')}}" class="nav-link {{Request::is('inventory/item/*') || Request::is('inventory/item') ? 'active' : ''}}" data-key="t-inventory-items"> Items </a>

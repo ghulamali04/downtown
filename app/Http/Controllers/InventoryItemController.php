@@ -74,8 +74,9 @@ class InventoryItemController extends Controller
             ->with('success', 'Inventory item updated successfully.');
     }
 
-    public function destroy(InventoryItem $item)
+    public function destroy($item)
     {
+        $item = InventoryItem::findOrFail($item);
         $item->delete();
 
         return new JsonResponse([

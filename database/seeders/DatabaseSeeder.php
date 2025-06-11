@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\SystemSetting;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -50,6 +51,21 @@ class DatabaseSeeder extends Seeder
             'role' => 'staff',
             'email' => 'staff@downtown.com',
             'password' => Hash::make('password')
+        ]);
+
+        SystemSetting::factory()->create([
+            'type' => 'ipconfig',
+            'payload' => '127.0.0.1,::1'
+        ]);
+
+        SystemSetting::factory()->create([
+            'type' => 'service_charges',
+            'payload' => 5
+        ]);
+
+        SystemSetting::factory()->create([
+            'type' => 'print_mode',
+            'payload' => 'tunnel'
         ]);
     }
 }

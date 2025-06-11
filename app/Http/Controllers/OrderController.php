@@ -9,8 +9,10 @@ use App\Models\MenuItem;
 use App\Models\MenuItemVariant;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Yajra\DataTables\DataTables;
@@ -158,10 +160,12 @@ class OrderController extends Controller
             'instructions' => $request->input('instructions')
         ]);
 
+        $total_price = 0;
         foreach ($request->menuItems as $item) {
             $menuCategory = MenuCategory::find($item['category']);
             //$menuItem = MenuItem::where('id', $item['item'])->first();
             $menuItemVariant = MenuItemVariant::with('item')->where('id', $item['variant'])->first();
+            $price = @$menuItemVariant->current_price > 0 ? $menuItemVariant->current_price : @$menuItemVariant->item->current_price;
             OrderItem::create([
                 'order_id' => $order->id,
                 'menu_item_id' => @$menuItemVariant->item->id,
@@ -169,10 +173,16 @@ class OrderController extends Controller
                 'menu_item_variant_id' => @$menuItemVariant->id,
                 'name' => @$menuItemVariant->item->name . ' ' . @$menuItemVariant->name,
                 'qty' => $item['qty'],
-                'price' => @$menuItemVariant->current_price > 0 ? $menuItemVariant->current_price : @$menuItemVariant->item->current_price,
+                'price' => $price,
             ]);
+            $total_price += $item['qty'] * $price;
         }
-
+        $serviceCharges = optional(SystemSetting::serviceCharges()->first())->payload ?? '0';
+        if ($serviceCharges > 0) {
+            $total_service_charges = $total_price * ($serviceCharges / 100);
+            $order->service_charges = $total_service_charges;
+            $order->save();
+        }
         return redirect()->route('order.receipt', ['order' => $order->id])->with('success', 'Order successfully created');
     }
     public function update(Request $request, $order)
@@ -193,10 +203,12 @@ class OrderController extends Controller
 
         OrderItem::where('order_id', $order->id)->delete();
 
+        $total_price = 0;
         foreach ($request->menuItems as $item) {
             $menuCategory = MenuCategory::find($item['category']);
             //$menuItem = MenuItem::where('id', $item['item'])->first();
             $menuItemVariant = MenuItemVariant::with('item')->where('id', $item['variant'])->first();
+            $price = @$menuItemVariant->current_price > 0 ? $menuItemVariant->current_price : @$menuItemVariant->item->current_price;
             OrderItem::create([
                 'order_id' => $order->id,
                 'menu_item_id' => @$menuItemVariant->item->id,
@@ -204,8 +216,15 @@ class OrderController extends Controller
                 'menu_item_variant_id' => @$menuItemVariant->id,
                 'name' => @$menuItemVariant->item->name . ' ' . @$menuItemVariant->name,
                 'qty' => $item['qty'],
-                'price' => @$menuItemVariant->current_price > 0 ? $menuItemVariant->current_price : @$menuItemVariant->item->current_price,
+                'price' => $price,
             ]);
+            $total_price += $price * $item['qty'];
+        }
+        $serviceCharges = optional(SystemSetting::serviceCharges()->first())->payload ?? '0';
+        if ($serviceCharges > 0) {
+            $total_service_charges = $total_price * ($serviceCharges / 100);
+            $order->service_charges = $total_service_charges;
+            $order->save();
         }
 
         return redirect()->route('order.receipt', ['order' => $order->id])->with('success', 'Order successfully updated');
@@ -509,15 +528,12 @@ class OrderController extends Controller
 
     public function printReceipt(Request $request)
     {
+        $printMode = optional(SystemSetting::printMode()->first())->payload ?? 'tunnel';
         $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
-        if ($request->type == 'paid') {
-            $order->is_paid = 1;
-            $order->save();
-        } else {
-            $order->is_paid = 0;
-            $order->save();
-        }
-        $response = Http::timeout(60)
+        $order->is_paid = $request->type == 'paid' ? 1 : 0;
+        $order->save();
+        if ($printMode == 'tunnel') {
+            $response = Http::timeout(60)
         // ->withOptions([
         //     'curl' => [
         //         CURLOPT_DNS_SERVERS => '1.1.1.1,8.8.8.8', // Use Cloudflare/Google DNS
@@ -528,6 +544,15 @@ class OrderController extends Controller
         ]);
 
         if ($response->successful()) {
+            return response()->json([
+                "success" => true
+            ]);
+        }
+        } else {
+            Cache::put("print_order_{$order->id}", $order, now()->addMinutes(1));
+            $queued = Cache::get('print_queue', []);
+            $queued[] = $order->id;
+            Cache::put('print_queue', $queued);
             return response()->json([
                 "success" => true
             ]);

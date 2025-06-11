@@ -14,6 +14,7 @@ class InventoryTracking extends Model
         'inventory_item_id',
         'date',
         'description',
+        'category',
         'type',
         'amount',
         'user_id',

@@ -62,6 +62,7 @@ class InventoryTrackingController extends Controller
             'date' => 'required|date',
             'description' => 'nullable|string',
             'type' => 'required|in:purchase,used,wasted,returned',
+            'category' => 'nullable|string|max:255',
             'amount' => 'required|numeric|min:0',
         ]);
 
@@ -188,6 +189,7 @@ class InventoryTrackingController extends Controller
             'date' => 'required|date',
             'description' => 'nullable|string',
             'type' => 'required|in:purchase,used,wasted,returned',
+            'category' => 'nullable|string|max:255',
             'amount' => 'required|numeric|min:0',
         ]);
 

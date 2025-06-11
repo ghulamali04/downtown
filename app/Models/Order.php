@@ -16,6 +16,7 @@ class Order extends Model
         'type',
         'table_number',
         'status',
+        'service_charges',
         'payment_status',
         'instructions',
         'is_paid'

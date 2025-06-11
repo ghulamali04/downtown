@@ -67,9 +67,11 @@ class MenuItemController extends Controller
         ]);
         return redirect()->back()->with('success', 'Menu Item successfully updated');
     }
-    public function destroy(MenuItem $menuItem)
+    public function destroy($menuItem)
     {
+        $menuItem = MenuItem::findOrFail($menuItem);
         $menuItem->delete();
+
         return new JsonResponse([
             "status" => "success",
             "message" => "Menu Item successfully deleted"

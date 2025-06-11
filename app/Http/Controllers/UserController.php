@@ -74,8 +74,9 @@ class UserController extends Controller
         return redirect()->back()->with('success', "User password succesfully updated");
     }
 
-    public function destroy(User $user)
+    public function destroy($user)
     {
+        $user = User::findOrFail($user);
         if($user->role !== 'superadmin') {
             $user->delete();
             return new JsonResponse([
