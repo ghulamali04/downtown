@@ -80,6 +80,7 @@
 
             <strong>DOWNTOWN</strong><br>
             <strong>BAHAWAL NAGAR</strong><br>
+            Tel: (063) 2280-988<br>
             Phone: 03202280987<br>
             03132890988<br>
             {{ $order->is_paid == 1 ? 'PAID' : 'UNPAID' }}<br>
@@ -140,7 +141,7 @@
                 <div style="width: 35%;text-align: right;">{{ number_format($total, 2) }}</div>
             </div>
             <div style="display: flex;justify-content: space-between;">
-                <div style="width: 65%;">VAT/GST (0% on Cash)</div>
+                <div style="width: 65%;">VAT/GST (5%)</div>
                 <div style="width: 35%;text-align: right;">{{ '0.00' }}</div>
             </div>
             <div style="display: flex;justify-content: space-between;">

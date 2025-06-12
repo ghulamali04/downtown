@@ -27,6 +27,7 @@
             </div><!-- end card header -->
             <div class="card-body pt- 0">
                 <form method="POST" action="{{ route('customer.update', ['customer' => $customer->id]) }}">@csrf
+                    @method('PUT')
                     <div class="row">
                         <div class=" col-md-4 col-sm-6 col-12 mb-3">
                             <label class="form-label">First Name</label>
