@@ -150,7 +150,7 @@ class InventoryTrackingController extends Controller
         $transactions = InventoryTracking::where('date', '<=', date("Y-m-d", strtotime($date)))
         ->where(function ($qry) use ($request) {
             if (!empty($request->item_id)) {
-                $qry->where('item_id', $request->item_id);
+                $qry->where('inventory_item_id', $request->item_id);
             }
         })
         ->get();
