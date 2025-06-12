@@ -324,7 +324,7 @@
                     el.select2('destroy')
                     let html = `<option value="">Select Variant</option>`
                     response.forEach(option => {
-                        html += `<option value="${option.id}">${option.item.name} ${option.name} (${option.current_price})</option>`
+                        html += `<option value="${option.id}">${option.item.name} ${option.name !== null ? option.name : ''} (${option.current_price})</option>`
                     })
                     el.html(html)
                     el.select2()
