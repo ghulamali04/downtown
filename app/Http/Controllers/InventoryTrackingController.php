@@ -143,11 +143,17 @@ class InventoryTrackingController extends Controller
         return false;
     }
 
-    public function getCurrentBalance($date = null)
+    public function getCurrentBalance(Request $request, $date = null)
     {
         $date = $date ?? date("Y-m-d");
 
-        $transactions = InventoryTracking::where('date', '<=', date("Y-m-d", strtotime($date)))->get();
+        $transactions = InventoryTracking::where('date', '<=', date("Y-m-d", strtotime($date)))
+        ->where(function ($qry) use ($request) {
+            if (!empty($request->item_id)) {
+                $qry->where('item_id', $request->item_id);
+            }
+        })
+        ->get();
 
         $balance = 0;
         foreach ($transactions as $transaction) {

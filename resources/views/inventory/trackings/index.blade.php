@@ -186,7 +186,7 @@
             function loadBalance(date) {
                 $.ajax({
                     type: "GET",
-                    url: "{{url('/inventory/tracking/current/balance')}}/"+date,
+                    url: "{{url('/inventory/tracking/current/balance')}}/"+date+"?item_id={{Request::get('item_id')}}",
                     beforeSend: function () {
                         $("[balance-date]").html(date)
                         $("[balance-value]").html(parseFloat("0.00").toFixed(2))
