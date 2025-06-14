@@ -208,7 +208,7 @@
             });
             $(document).on('click', '.delete-btn', function () {
                 const dataId = $(this).attr('data-id')
-                const c = confirm("Are you really want to delete this customer?")
+                const c = confirm("Are you really want to delete this inventory record?")
                 if(c) {
                     $.ajax({
                         type: "POST",
