@@ -253,11 +253,11 @@
             const min = parseInt($input.attr('min')) || 1;
             const max = parseInt($input.attr('max')) || 999;
 
-            if ($(this).hasClass('plus') && currentVal < max) {
-                $input.val(currentVal + 1);
-            } else if ($(this).hasClass('minus') && currentVal > min) {
-                $input.val(currentVal - 1);
-            }
+            // if ($(this).hasClass('plus') && currentVal < max) {
+            //     $input.val(currentVal + 1);
+            // } else if ($(this).hasClass('minus') && currentVal > min) {
+            //     $input.val(currentVal - 1);
+            // }
 
             $curQty.val($input.val());
         });
@@ -368,7 +368,7 @@
             },
             hide: function(deleteElement) {
                 // Clean up select2 instances before removing
-                $(this).find('.select2').select2('destroy');
+                // $(this).find('.select2').select2('destroy');
                 $(this).slideUp(200, deleteElement);
             },
             isFirstItemUndeletable: true,
