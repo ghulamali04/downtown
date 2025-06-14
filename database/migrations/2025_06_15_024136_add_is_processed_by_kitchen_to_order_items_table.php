@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('order_items', function (Blueprint $table) {
-            $table->tinyInteger('is_processed_by_kitchen')->default(0);
+            $table->bigInteger('to_be_processed')->default(0);
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('order_items', function (Blueprint $table) {
-            $table->dropColumn('is_processed_by_kitchen');
+            $table->dropColumn('to_be_processed');
         });
     }
 };

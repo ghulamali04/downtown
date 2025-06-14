@@ -18,7 +18,7 @@ Route::get('/print-orders', function () {
     Cache::put('print_queue', $queued);
 
     OrderItem::where('order_id', $orderData["id"])->update([
-        'is_processed_by_kitchen' => 1
+        'to_be_processed' => 0
     ]);
     return response()->json(['order' => $orderData]);
 });

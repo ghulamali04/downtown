@@ -22,8 +22,7 @@ class Order extends Model
         'is_paid',
         'is_bar',
         'paid_amount',
-        'change',
-        'is_processed_by_kitchen'
+        'change'
     ];
 
     public function items()

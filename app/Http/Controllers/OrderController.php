@@ -176,6 +176,7 @@ class OrderController extends Controller
                 'menu_item_variant_id' => @$menuItemVariant->id,
                 'name' => @$menuItemVariant->item->name . ' ' . @$menuItemVariant->name,
                 'qty' => $item['qty'],
+                'to_be_processed' => $item['qty'],
                 'price' => $price,
             ]);
             $total_price += $item['qty'] * $price;
@@ -207,24 +208,47 @@ class OrderController extends Controller
             'instructions' => $request->input('instructions')
         ]);
 
-        OrderItem::where('order_id', $order->id)->delete();
+        //OrderItem::where('order_id', $order->id)->delete();
 
+        $orderItems = [];
         $total_price = 0;
         foreach ($request->menuItems as $item) {
             $menuCategory = MenuCategory::find($item['category']);
             //$menuItem = MenuItem::where('id', $item['item'])->first();
             $menuItemVariant = MenuItemVariant::with('item')->where('id', $item['variant'])->first();
             $price = @$menuItemVariant->current_price > 0 ? $menuItemVariant->current_price : @$menuItemVariant->item->current_price;
-            OrderItem::create([
-                'order_id' => $order->id,
-                'menu_item_id' => @$menuItemVariant->item->id,
-                'menu_category_id' => $menuCategory->id,
-                'menu_item_variant_id' => @$menuItemVariant->id,
-                'name' => @$menuItemVariant->item->name . ' ' . @$menuItemVariant->name,
-                'qty' => $item['qty'],
-                'price' => $price,
-            ]);
-            $total_price += $price * $item['qty'];
+            $oldOrderItem = OrderItem::where('order_id', $order->id)
+            ->where('menu_item_id', @$menuItemVariant->item->id)
+            ->where('menu_category_id', $menuCategory->id)
+            ->where('menu_item_variant_id', @$menuItemVariant->id)
+            ->first();
+            if ($oldOrderItem) {
+                $oldOrderItem->forceFill([
+                    'order_id' => $order->id,
+                    'menu_item_id' => @$menuItemVariant->item->id,
+                    'menu_category_id' => $menuCategory->id,
+                    'menu_item_variant_id' => @$menuItemVariant->id,
+                    'name' => @$menuItemVariant->item->name . ' ' . @$menuItemVariant->name,
+                    'qty' => $item['qty'],
+                    'to_be_processed' => $item['qty'] > $oldOrderItem->qty ? $item['qty'] - $oldOrderItem->qty : $oldOrderItem->to_be_processed + $item['qty'] - $oldOrderItem->qty ,
+                    'price' => $price,
+                ])->save();
+                $total_price += $price * $item['qty'];
+                $orderItems[] = $oldOrderItem->id;
+            } else {
+                $orderItem = OrderItem::create([
+                    'order_id' => $order->id,
+                    'menu_item_id' => @$menuItemVariant->item->id,
+                    'menu_category_id' => $menuCategory->id,
+                    'menu_item_variant_id' => @$menuItemVariant->id,
+                    'name' => @$menuItemVariant->item->name . ' ' . @$menuItemVariant->name,
+                    'qty' => $item['qty'],
+                    'to_be_processed' => $item['qty'],
+                    'price' => $price,
+                ]);
+                $total_price += $price * $item['qty'];
+                $orderItems[] = $orderItem->id;
+            }
         }
         $serviceCharges = optional(SystemSetting::serviceCharges()->first())->payload ?? '0';
         if ($serviceCharges > 0) {
@@ -553,7 +577,7 @@ class OrderController extends Controller
 
         if ($response->successful()) {
             OrderItem::where('order_id', $order->id)->update([
-                'is_processed_by_kitchen' => 1
+                'to_be_processed' => 0
             ]);
             return response()->json([
                 "success" => true
