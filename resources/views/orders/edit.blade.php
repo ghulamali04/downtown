@@ -250,26 +250,6 @@
         return 'id' + Math.random().toString(36).substr(2, 9);
     }
 
-    // Optimized quantity update function - removed from repeater
-    function initQuantityControls($container) {
-        $container.find('.input-step .plus, .input-step .minus').off('click.qty').on('click.qty', function(e) {
-            e.preventDefault();
-            const $input = $(this).siblings('.qty');
-            const $curQty = $(this).siblings('.cur-qty');
-            const currentVal = parseInt($input.val()) || 1;
-            const min = parseInt($input.attr('min')) || 1;
-            const max = parseInt($input.attr('max')) || 999;
-
-            // if ($(this).hasClass('plus') && currentVal < max) {
-            //     $input.val(currentVal + 1);
-            // } else if ($(this).hasClass('minus') && currentVal > min) {
-            //     $input.val(currentVal - 1);
-            // }
-
-            $curQty.val($input.val());
-        });
-    }
-
     $(document).ready(function() {
         $("#add-new-customer").on('click', function() {
             $("#FormAddCustomer")[0].reset();
@@ -343,6 +323,53 @@
             })
         })
 
+        window.isData = function() {
+        // Do nothing - we'll handle quantity controls through jQuery
+        console.log('isData() function overridden to prevent duplicate handlers');
+    };
+
+    // Remove ALL event handlers from quantity controls to prevent duplicates
+    $('.input-step .plus, .input-step .minus').off();
+    $(document).off('click', '.input-step .plus');
+    $(document).off('click', '.input-step .minus');
+    $(document).off('click.qty');
+    $(document).off('click.qty-control');
+
+    // Remove vanilla JS event listeners that might have been added by isData()
+    $('.input-step .plus, .input-step .minus').each(function() {
+        this.removeEventListener('click', arguments.callee);
+        // Clone and replace to remove all event listeners
+        const newElement = this.cloneNode(true);
+        this.parentNode.replaceChild(newElement, this);
+    });
+
+    // Use a single delegated event handler with a unique namespace
+    $(document).on('click.quantity-handler', '.input-step .plus, .input-step .minus', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        const $button = $(this);
+        const $input = $button.siblings('.qty');
+        const $curQty = $button.siblings('.cur-qty');
+        const currentVal = parseInt($input.val()) || 1;
+        const min = parseInt($input.attr('min')) || 1;
+        const max = parseInt($input.attr('max')) || 999;
+
+        let newVal = currentVal;
+
+        if ($button.hasClass('plus') && currentVal < max) {
+            newVal = currentVal + 1;
+            console.log("Current Inventory Val: " + currentVal);
+        } else if ($button.hasClass('minus') && currentVal > min) {
+            newVal = currentVal - 1;
+        }
+
+        $input.val(newVal);
+        $curQty.val(newVal);
+    });
+
+
         // Optimized repeater initialization
         $(".items-repeater").repeater({
             initEmpty: false,
@@ -363,19 +390,30 @@
                     }
                 });
 
-                // Initialize quantity controls for this row only
-                initQuantityControls($row);
 
-                // Set default quantity
-                $row.find('.cur-qty').val(1);
-                $row.find('.qty').val(1)
+
+                // Clean any existing event listeners from new quantity controls
+            $row.find('.input-step .plus, .input-step .minus').each(function() {
+                // Remove any vanilla JS event listeners
+                const newElement = this.cloneNode(true);
+                this.parentNode.replaceChild(newElement, this);
+            });
+
+            // Set default quantity
+            $row.find('.cur-qty').val(1);
+            $row.find('.qty').val(1);
+
+            // Prevent isData() from being called on new elements
+            $row.find('.input-step .plus, .input-step .minus').addClass('jquery-handled');
 
                 // Animate row appearance
                 $row.slideDown(200);
             },
             hide: function(deleteElement) {
                 // Clean up select2 instances before removing
-                // $(this).find('.select2').select2('destroy');
+                // if ($(this).find('.select2').length > 0) {
+                //     $(this).find('.select2').select2('destroy');
+                // }
                 $(this).slideUp(200, deleteElement);
             },
             isFirstItemUndeletable: true,
@@ -470,8 +508,6 @@
             }
         });
 
-        // Initialize quantity controls for existing elements
-        initQuantityControls($(document));
     });
 </script>
 @endsection

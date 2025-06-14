@@ -1452,12 +1452,14 @@ function formatChildRow(order) {
                 "render": function (data, type, row) {
                     return `
                         ${row.status === 'pending' ? `
+                        @if (Auth::user()->role == 'admin' || Auth::user()->role == 'reception' || Auth::user()->role == 'superadmin')
                                 <a class="status-btn text-success" href="javascript:;" data-id="${data}" data-status="completed">
                                     <i class="ri-chat-check-line ri-2xl"></i>
                                 </a>
                                 <a class="status-btn text-danger" href="javascript:;" data-id="${data}" data-status="cancelled">
                                     <i class="ri-chat-delete-line ri-2xl"></i>
                                 </a>
+                                @endif
                                  <a class="receipt-btn text-dark" href="javascript:;" data-id="${data}">
                                     <i class=" ri-printer-line ri-2xl"></i>
                                     </a>
