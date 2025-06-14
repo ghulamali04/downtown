@@ -70,6 +70,13 @@
                             @enderror
                         </div>
 
+                        <div class="col-md-4 col-sm-6 col-12 mb-3">
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" name="is_bar" value="1" id="IsBar">
+                                <label class="form-check-label" for="Isbar"> Include Bar Items</label>
+                              </div>
+                        </div>
+
                         <div class="col-md-12 col-sm-12 col-12 mb-3">
                             <label class="form-label">Instructions</label>
                             <textarea class="form-control @error('instructions') is-invalid @enderror" name="instructions">{{old('instructions')}}</textarea>

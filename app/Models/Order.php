@@ -19,7 +19,10 @@ class Order extends Model
         'service_charges',
         'payment_status',
         'instructions',
-        'is_paid'
+        'is_paid',
+        'is_bar',
+        'paid_amount',
+        'change'
     ];
 
     public function items()

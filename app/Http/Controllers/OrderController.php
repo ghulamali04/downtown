@@ -159,6 +159,7 @@ class OrderController extends Controller
             'user_id' => Auth::user()->id,
             'type' => $request->input('type'),
             'table_number' => $request->input('table_number'),
+            'is_bar' => @$request->input('is_bar') ? 1 : 0,
             'instructions' => $request->input('instructions')
         ]);
 
@@ -202,6 +203,7 @@ class OrderController extends Controller
             'customer_id' => $request->input('customer'),
             'type' => $request->input('type'),
             'table_number' => $request->input('table_number'),
+            'is_bar' => @$request->input('is_bar') ? 1 : 0,
             'instructions' => $request->input('instructions')
         ]);
 
@@ -535,6 +537,8 @@ class OrderController extends Controller
         $printMode = optional(SystemSetting::printMode()->first())->payload ?? 'tunnel';
         $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
         $order->is_paid = $request->type == 'paid' ? 1 : 0;
+        $order->paid_amount = $request->paid_amount;
+        $order->change = $request->change;
         $order->save();
         if ($printMode == 'tunnel') {
             $response = Http::timeout(60)

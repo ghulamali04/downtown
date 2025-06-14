@@ -154,6 +154,19 @@
                 <div style="width: 65%;"><strong>GRAND TOTAL</strong></div>
                 <div style="width: 35%;text-align: right;"><strong>{{ number_format($total + $order->service_charges, 2) }}</strong></div>
             </div>
+            @if (@$order->is_paid)
+            <div class="text-center">
+                -------------------------------------<br>
+            </div>
+            <div style="display: flex;justify-content: space-between;">
+                <div style="width: 65%;"><strong>Total Paid</strong></div>
+                <div style="width: 35%;text-align: right;"><strong>{{ number_format($order->paid_amount, 2) }}</strong></div>
+            </div>
+            <div style="display: flex;justify-content: space-between;">
+                <div style="width: 65%;"><strong>Change (if any)</strong></div>
+                <div style="width: 35%;text-align: right;"><strong>{{ number_format($order->change, 2) }}</strong></div>
+            </div>
+            @endif
         </div>
         <div style="text-align: center;">
             <br>
@@ -228,6 +241,19 @@
         </div>
     </div> --}}
 
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <label class="form-label">Paid Amount</label>
+                            <input type="text" class="form-control" name="paid_amount" id="paid_amount"
+                                value="{{$order->paid_amount}}" placeholder="Amount">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Change</label>
+                            <input type="text" class="form-control " name="change" id="change"
+                                value="{{$order->change}}" placeholder="Amount">
+        </div>
+    </div>
     <div>
         <button id="test-btn" class="btn btn-primary">Print Receipt</button>
     <button id="pay-btn" class="btn btn-success">Pay & Print Receipt</button>
@@ -293,6 +319,8 @@ const printerName = '';//document.getElementById('printer-select').value;
 }*/
 
 try {
+    const paidAmount = document.getElementById('paid_amount').value;
+    const change = document.getElementById('change').value;
     const response = await fetch('{{url('')}}/print/receipt?order_id={{$order->id}}&type='+pay, {
         method: 'POST',
         headers: {
@@ -301,7 +329,9 @@ try {
         },
         body: JSON.stringify({
             printer: printerName,
-            type: pay
+            type: pay,
+            paid_amount: paidAmount,
+            change: change
         })
     });
 
