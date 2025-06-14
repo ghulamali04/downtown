@@ -353,3 +353,20 @@ try {
 </script>
 @stop
 
+
+@section('plugin_scripts')
+<script>
+    $(document).ready(function () {
+        $(document).on('focusout', 'input[name=paid_amount]', function () {
+            const totalAmount = parseFloat('{{$total + $order->service_charges}}')
+            const paidAmount = parseFloat($(this).val())
+            const change = paidAmount - totalAmount
+            if (change >= 0) {
+                $('#change').val(change)
+            } else {
+                $('#change').val(0)
+            }
+        })
+    })
+</script>
+@stop
