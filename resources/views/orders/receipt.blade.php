@@ -152,7 +152,7 @@
             @endif
             <div style="display: flex;justify-content: space-between;">
                 <div style="width: 65%;"><strong>GRAND TOTAL</strong></div>
-                <div style="width: 35%;text-align: right;"><strong>{{ number_format($total + $service_charges, 2) }}</strong></div>
+                <div style="width: 35%;text-align: right;"><strong>{{ number_format($total + $order->service_charges, 2) }}</strong></div>
             </div>
         </div>
         <div style="text-align: center;">
