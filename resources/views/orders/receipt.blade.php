@@ -243,12 +243,12 @@
 
 
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-6 mb-3">
             <label class="form-label">Paid Amount</label>
                             <input type="text" class="form-control" name="paid_amount" id="paid_amount"
                                 value="{{$order->paid_amount}}" placeholder="Amount">
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6 mb-3">
             <label class="form-label">Change</label>
                             <input type="text" class="form-control " name="change" id="change"
                                 value="{{$order->change}}" placeholder="Amount">
