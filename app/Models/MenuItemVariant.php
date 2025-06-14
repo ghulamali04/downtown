@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class MenuItemVariant extends Model
 {
@@ -15,6 +16,23 @@ class MenuItemVariant extends Model
         'menu_item_id',
         'current_price'
     ];
+
+    protected static function boot()
+{
+    parent::boot();
+
+    static::saved(function ($variant) {
+        if ($variant->item) {
+            Cache::forget("menu_variants_category_{$variant->item->menu_category_id}");
+        }
+    });
+
+    static::deleted(function ($variant) {
+        if ($variant->item) {
+            Cache::forget("menu_variants_category_{$variant->item->menu_category_id}");
+        }
+    });
+}
 
     public function item()
     {

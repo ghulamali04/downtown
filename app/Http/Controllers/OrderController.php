@@ -151,6 +151,7 @@ class OrderController extends Controller
         Validator::make($request->except('_token'), [
             'type' => 'required',
             'table_number' => 'required_if:type,dining',
+            'customer' => 'required_if:type,delivery',
             'menutItems.*' => 'required'
         ])->validate();
         $order = Order::create([
@@ -191,6 +192,7 @@ class OrderController extends Controller
         Validator::make($request->except('_token'), [
             'type' => 'required',
             'table_number' => 'required_if:type,dining',
+            'customer' => 'required_if:type,delivery',
             'menutItems.*' => 'required'
         ])->validate();
 

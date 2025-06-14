@@ -190,43 +190,53 @@
 <script src="{{asset('/')}}assets/js/pages/form-input-spin.init.js"></script>
 <script src="{{asset('/')}}assets/libs/repeater/jquery.repeater.js"></script>
 <script>
+    // Cache for API responses to avoid repeated requests
+    const apiCache = new Map();
+
+    // Debounce function to limit API calls
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
     function uniqueId() {
         return 'id' + Math.random().toString(36).substr(2, 9);
     }
-    $(document).ready(function () {
-        $(".items-repeater").repeater({
-            initEmpty: false,
-            show: function () {
-                const $row = $(this);
-                $row.slideDown();
-                const index = uniqueId()
 
-                $row.find("select.menu-item-category").attr('data-id', index)
-                $row.find("select.menu-item-category").select2()
+    // Optimized quantity update function - removed from repeater
+    function initQuantityControls($container) {
+        $container.find('.input-step .plus, .input-step .minus').off('click.qty').on('click.qty', function(e) {
+            e.preventDefault();
+            const $input = $(this).siblings('.qty');
+            const $curQty = $(this).siblings('.cur-qty');
+            const currentVal = parseInt($input.val()) || 1;
+            const min = parseInt($input.attr('min')) || 1;
+            const max = parseInt($input.attr('max')) || 999;
 
-                $row.find("select.menu-item").attr('data-id', index)
-                $row.find("select.menu-item").select2()
+            if ($(this).hasClass('plus') && currentVal < max) {
+                $input.val(currentVal + 1);
+            } else if ($(this).hasClass('minus') && currentVal > min) {
+                $input.val(currentVal - 1);
+            }
 
-                $row.find("select.menu-item-variant").attr('data-id', index)
-                $row.find("select.menu-item-variant").select2()
-                function isData() { var t = document.getElementsByClassName("plus"), e = document.getElementsByClassName("minus"), n = document.getElementsByClassName("product"); t && Array.from(t).forEach(function (t) { t.addEventListener("click", function (e) { parseInt(t.previousElementSibling.value) < e.target.previousElementSibling.getAttribute("max") && (e.target.previousElementSibling.value++, n) && Array.from(n).forEach(function (t) { updateQuantity(e.target) }) }) }), e && Array.from(e).forEach(function (t) { t.addEventListener("click", function (e) { parseInt(t.nextElementSibling.value) > e.target.nextElementSibling.getAttribute("min") && (e.target.nextElementSibling.value--, n) && Array.from(n).forEach(function (t) { updateQuantity(e.target) }) }) }) } isData();
-                $row.find('.cur-qty').val(1)
-            },
-            hide: function (deleteElement) {
-                $(this).slideUp(deleteElement);
-            },
-            isFirstItemUndeletable: true,
+            $curQty.val($input.val());
         });
+    }
 
-        $(document).on('click', '.input-step .plus, .input-step .minus', function () {
-            const qty = $(this).parent().find('.qty').val()
-            $(this).parent().find('.cur-qty').val(qty)
+    $(document).ready(function() {
+        $("#add-new-customer").on('click', function() {
+            $("#FormAddCustomer")[0].reset();
+            $("#FormAddCustomer .form-control").removeClass('is-invalid');
+            $("#FormAddCustomer [error-name]").html('');
+            $("#modalAddCustomer").modal('show');
         });
-
-        $("#add-new-customer").on('click', function () {
-            $("#FormAddCustomer")[0].reset()
-            $("#modalAddCustomer").modal('show')
-        })
 
         $('#customer-select').select2({
         ajax: {
@@ -293,69 +303,135 @@
             })
         })
 
-        function getMenuItem(id) {
-            return  $.ajax({
-                type: "GET",
-                url: "{{url('/openapi/menu/items')}}?menu_category_id=" + id,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-        }
+        // Optimized repeater initialization
+        $(".items-repeater").repeater({
+            initEmpty: false,
+            show: function() {
+                const $row = $(this);
+                const index = uniqueId();
 
-        function getMenuItemVariant(id) {
+                // Set data-id attributes first
+                $row.find("select.menu-item-category").attr('data-id', index);
+                $row.find("select.menu-item").attr('data-id', index);
+                $row.find("select.menu-item-variant").attr('data-id', index);
+
+                // Initialize select2 elements
+                $row.find("select.menu-item-category, select.menu-item, select.menu-item-variant").select2({
+                    width: '100%',
+                    placeholder: function() {
+                        return $(this).data('placeholder') || 'Select an option';
+                    }
+                });
+
+                // Initialize quantity controls for this row only
+                initQuantityControls($row);
+
+                // Set default quantity
+                $row.find('.cur-qty').val(1);
+                $row.find('.qty').val(1)
+
+                // Animate row appearance
+                $row.slideDown(200);
+            },
+            hide: function(deleteElement) {
+                // Clean up select2 instances before removing
+                $(this).find('.select2').select2('destroy');
+                $(this).slideUp(200, deleteElement);
+            },
+            isFirstItemUndeletable: true,
+        });
+
+        function getMenuItemVariant(categoryId) {
+            const cacheKey = `variants_${categoryId}`;
+
+            if (apiCache.has(cacheKey)) {
+                return Promise.resolve(apiCache.get(cacheKey));
+            }
+
             return $.ajax({
                 type: "GET",
-                url: "{{url('/openapi/menu/variants')}}?menu_category_id=" + id,
+                url: "{{url('/openapi/menu/variants')}}",
+                data: { menu_category_id: categoryId },
+                timeout: 5000,
                 headers: {
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-            })
+            }).done(function(response) {
+                apiCache.set(cacheKey, response);
+                // Clear cache after 5 minutes
+                setTimeout(() => apiCache.delete(cacheKey), 300000);
+            }).fail(function(xhr) {
+                console.error('Failed to load menu variants:', xhr.statusText);
+            });
         }
 
+        function getMenuItem(categoryId) {
+            const cacheKey = `items_${categoryId}`;
 
-        $(document).on('change', '.select2', function () {
-            const id = $(this).val()
-            const index = $(this).data('id')
-            const name = $(this).data('name')
-            if (name === 'category') {
-                getMenuItemVariant(id).done(function (response) {
-                    const el = $(`.menu-item-variant[data-id=${index}]`)
-                    el.select2('destroy')
-                    let html = `<option value="">Select Variant</option>`
-                    response.forEach(option => {
-                        html += `<option value="${option.id}">${option.item.name} ${option.name !== null ? option.name : ''} (${option.current_price})</option>`
-                    })
-                    el.html(html)
-                    el.select2()
-                })
+            if (apiCache.has(cacheKey)) {
+                return Promise.resolve(apiCache.get(cacheKey));
             }
-            // if(name == 'category') {
-            //     getMenuItem(id).done(function (response) {
-            //         const el = $(`.menu-item[data-id=${index}]`)
-            //         el.select2('destroy')
-            //         let html = `<option value="">Select Menu Item</option>`
-            //         response.forEach(option => {
-            //             html += `<option value="${option.id}">${option.name} (${option.current_price})</option>`
-            //         })
-            //         el.html(html)
-            //         el.select2()
-            //     })
-            // }
-            // if(name == 'item') {
-            //     getMenuItemVariant(id).done(function (response) {
-            //         const el = $(`.menu-item-variant[data-id=${index}]`)
-            //         el.select2('destroy')
-            //         let html = `<option value="">Select Variant</option>`
-            //         response.forEach(option => {
-            //             html += `<option value="${option.id}">${option.name} (${option.current_price})</option>`
-            //         })
-            //         el.html(html)
-            //         el.select2()
-            //     })
-            // }
-        })
 
+            return $.ajax({
+                type: "GET",
+                url: "{{url('/openapi/menu/items')}}",
+                data: { menu_category_id: categoryId },
+                timeout: 5000,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).done(function(response) {
+                apiCache.set(cacheKey, response);
+                // Clear cache after 5 minutes
+                setTimeout(() => apiCache.delete(cacheKey), 300000);
+            }).fail(function(xhr) {
+                console.error('Failed to load menu items:', xhr.statusText);
+            });
+        }
+
+        // Debounced change handler for better performance
+        const handleCategoryChange = debounce(function(categoryId, index) {
+            const $variantSelect = $(`.menu-item-variant[data-id="${index}"]`);
+
+            if (!categoryId) {
+                $variantSelect.html('<option value="">Select Variant</option>').select2();
+                return;
+            }
+
+            // Show loading state
+            $variantSelect.html('<option value="">Loading...</option>').select2();
+
+            getMenuItemVariant(categoryId).then(function(response) {
+                let html = '<option value="">Select Variant</option>';
+
+                if (response && Array.isArray(response)) {
+                    response.forEach(option => {
+                        const itemName = option.item?.name || 'Unknown Item';
+                        const variantName = option.name ? ` ${option.name}` : '';
+                        const price = option.current_price || '0';
+                        html += `<option value="${option.id}">${itemName}${variantName} (${price})</option>`;
+                    });
+                }
+
+                $variantSelect.html(html).select2();
+            }).catch(function() {
+                $variantSelect.html('<option value="">Error loading variants</option>').select2();
+            });
+        }, 300);
+
+        // Optimized change handler with event delegation
+        $(document).on('change', 'select[data-name="category"]', function() {
+            const categoryId = $(this).val();
+            const index = $(this).data('id');
+            if (index || index == 0) {
+                handleCategoryChange(categoryId, index);
+            }
+        });
+
+        // Initialize quantity controls for existing elements
+        initQuantityControls($(document));
     });
 </script>
 @endsection

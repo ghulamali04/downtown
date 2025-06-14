@@ -151,14 +151,15 @@
         </div>
         <div style="text-align: center;">
             <br>
+            @if (@$order->customer)
             Customer Detail<br>
             -------------------------------------<br>
             <div style="text-align: left">
-                {{ $order->customer->phone_number }}<br>
-                Delivery Address: {{ $order->customer->address }}<br>
-                Order Taker: {{$order->first_name . ' ' . $order->last_name}}<br>
+                {{ @$order->customer->phone_number }}<br>
+                Delivery Address: {{ @$order->customer->address }}<br>
             </div>
-            --------------------------------<br>
+            @endif
+            -------------------------------------<br>
             Printed: {{ now()->format('d/m/Y H:i:s') }}<br>
             FOR ANY COMPLAINT & SUGGESTIONS<br>
             PLEASE CONTACT US @ (063) 2280-988<br>
