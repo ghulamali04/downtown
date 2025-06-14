@@ -552,6 +552,9 @@ class OrderController extends Controller
         ]);
 
         if ($response->successful()) {
+            OrderItem::where('order_id', $order->id)->update([
+                'is_processed_by_kitchen' => 1
+            ]);
             return response()->json([
                 "success" => true
             ]);
