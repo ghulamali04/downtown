@@ -56,7 +56,6 @@ class InventoryTrackingController extends Controller
 
     public function update(Request $request, InventoryTracking $tracking)
     {
-        abort(403);
         $validated = $request->validate([
             'inventory_item_id' => 'required|exists:inventory_items,id',
             'date' => 'required|date',

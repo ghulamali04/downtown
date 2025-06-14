@@ -170,12 +170,12 @@
                 "data" : "action",
                 "render": function (data, type, row) {
                     return `
-                       {{-- <a class="edit-btn" href="javascript:;" data-id="${data}">
+                        {{-- <a class="edit-btn" href="javascript:;" data-id="${data}">
                                     <i class="ri-edit-2-line ri-2xl"></i>
                                 </a> --}}
-                                ${row.type != 'purchase' ? `<a class=" text-danger delete-btn" href="javascript:;void" data-id="${data}">
+                                ${`<a class=" text-danger delete-btn" href="javascript:;void" data-id="${data}">
                                     <i class="ri-delete-bin-2-line ri-2xl"></i>
-                                </a>` : ''}
+                                </a>`}
                     `;
                 }
             }
