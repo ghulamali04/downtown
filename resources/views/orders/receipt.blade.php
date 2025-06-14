@@ -147,7 +147,7 @@
             @if ($order->type == 'dinning')
             <div style="display: flex;justify-content: space-between;">
                 <div style="width: 65%;">Service Charge (5%)</div>
-                <div style="width: 35%;text-align: right;">{{ number_format($service_charges, 2) }}</div>
+                <div style="width: 35%;text-align: right;">{{ number_format($order->service_charges, 2) }}</div>
             </div>
             @endif
             <div style="display: flex;justify-content: space-between;">
