@@ -43,6 +43,7 @@
                                 <th scope="col">Name</th>
                                 <th scope="col">Menu</th>
                                 <th scope="col">Category</th>
+                                <th scope="col">Type</th>
                                 <th scope="col">Price</th>
                                 <th scope="col">Action</th>
                             </tr>
@@ -103,6 +104,7 @@
             { "data": "name" },
             { "data": "item.name" },
             { "data": "item.category.name" },
+            { "data": "item_type" },
             { "data": "current_price" },
             {
                 "data" : "action",
