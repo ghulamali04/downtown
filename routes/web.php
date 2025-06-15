@@ -23,8 +23,7 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::middleware([IpCheck::class])->group(function () {
-        Route::post('/print/receipt', [OrderController::class, 'printReceipt']);
+    Route::post('/print/receipt', [OrderController::class, 'printReceipt']);
 
         Route::get('/dashboard', function () {
             return view('index');
@@ -76,5 +75,4 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('/user', UserController::class);
             Route::put('/user/change-password/{user}', [UserController::class, 'change_password'])->name('user.password.update');
         });
-    });
 });
