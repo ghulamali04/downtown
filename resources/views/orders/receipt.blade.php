@@ -257,7 +257,7 @@
     <div>
         <button id="notify-btn" class="btn btn-danger">Notify & Print</button>
         <button id="test-btn" class="btn btn-primary">Print Receipt</button>
-    <button id="pay-btn" class="btn btn-success">Pay & Print Receipt</button>
+    <button id="pay-btn" class="btn btn-success {{Auth::user()->role == 'admin' || Auth::user()->role == 'reception' || Auth::user()->role == 'superadmin' ? '' : 'd-none'}}">Pay & Print Receipt</button>
     </div>
 
     <div id="status-message" class="status">
