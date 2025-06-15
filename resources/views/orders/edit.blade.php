@@ -416,7 +416,7 @@
                 // }
                 $(this).slideUp(200, deleteElement);
             },
-            isFirstItemUndeletable: true,
+            isFirstItemUndeletable: false,
         });
 
         function getMenuItemVariant(categoryId) {
