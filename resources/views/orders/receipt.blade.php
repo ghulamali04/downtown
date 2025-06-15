@@ -182,7 +182,7 @@
             Printed: {{ now()->format('d/m/Y H:i:s') }}<br>
             FOR ANY COMPLAINT & SUGGESTIONS<br>
             PLEASE CONTACT US @ (063) 2280-988<br>
-            Software By Bitzsol<br>
+            Software By Bitzsol.com<br>
         </div>
     </div>
 
@@ -271,8 +271,9 @@
         // Setup event listeners
         receiptBtn.addEventListener('click', printTestPage);
         payBtn.addEventListener('click', printTestPage2);
+    notifyBtn.addEventListener('click', printTestPage3);
 
-        async function printTestPage() {
+        async function printTestPage3() {
             const c = confirm("Are you sure you want to notify kitchen/bar of order?")
             if (c) {
                 notifyBtn.innerHTML = '<span class="mr-1">Processing...</span><i class="ri-loader-4-line ri-spin"></i>'
