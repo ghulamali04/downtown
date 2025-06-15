@@ -56,13 +56,13 @@
                             <select class="form-select select2 @error('table_number') is-invalid @enderror" name="table_number">
                                 <option value="">Select</option>
                                 @for ($i = 1; $i <= 20; $i++)
-                                    <option value="G{{$i}}">G{{$i}}</option>
+                                    <option value="G{{$i}}" {{old('table_number') == 'G'.$i ? 'selected' : ''}}>G{{$i}}</option>
                                 @endfor
                                 @for ($i = 1; $i <= 20; $i++)
-                                    <option value="F{{$i}}">F{{$i}}</option>
+                                    <option value="F{{$i}}" {{old('table_number') == 'F'.$i ? 'selected' : ''}}>F{{$i}}</option>
                                 @endfor
                                 @for ($i = 1; $i <= 50; $i++)
-                                    <option value="T{{$i}}">T{{$i}}</option>
+                                    <option value="T{{$i}}" {{old('table_number') == 'T'.$i ? 'selected' : ''}}>T{{$i}}</option>
                                 @endfor
                             </select>
                             @error('table_number')
