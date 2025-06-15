@@ -177,6 +177,7 @@ class OrderController extends Controller
                 'name' => @$menuItemVariant->item->name . ' ' . @$menuItemVariant->name,
                 'qty' => $item['qty'],
                 'to_be_processed' => $item['qty'],
+                'item_type' => $menuItemVariant->item_type,
                 'price' => $price,
             ]);
             $total_price += $item['qty'] * $price;
@@ -232,6 +233,7 @@ class OrderController extends Controller
                     'qty' => $item['qty'],
                     'to_be_processed' => $item['qty'] > $oldOrderItem->qty ? $item['qty'] - $oldOrderItem->qty : $oldOrderItem->to_be_processed + $item['qty'] - $oldOrderItem->qty ,
                     'price' => $price,
+                    'item_type' => $menuItemVariant->item_type,
                 ])->save();
                 $total_price += $price * $item['qty'];
                 $orderItems[] = $oldOrderItem->id;
@@ -245,6 +247,7 @@ class OrderController extends Controller
                     'qty' => $item['qty'],
                     'to_be_processed' => $item['qty'],
                     'price' => $price,
+                    'item_type' => $menuItemVariant->item_type,
                 ]);
                 $total_price += $price * $item['qty'];
                 $orderItems[] = $orderItem->id;

@@ -14,7 +14,8 @@ class MenuItemVariant extends Model
     protected $fillable = [
         'name',
         'menu_item_id',
-        'current_price'
+        'current_price',
+        'item_type'
     ];
 
     protected static function boot()

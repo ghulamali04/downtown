@@ -18,7 +18,8 @@ class OrderItem extends Model
         'menu_category_id',
         'menu_item_variant_id',
         'qty',
-        'to_be_processed'
+        'to_be_processed',
+        'item_type'
     ];
 
     public function menu_item()

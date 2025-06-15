@@ -49,6 +49,18 @@
                             @enderror
                         </div>
                         <div class=" col-md-4 col-sm-6 col-12 mb-3">
+                            <label class="form-label">Item Type</label>
+                            <select class="form-select @error('item_type') is-invalid @enderror" name="item_type">
+                                <option value="">Select Item Type</option>
+                                <option value="kitchen" {{ old('item_type') == 'kitchen' ? 'selected' : '' }}>Kitchen</option>
+                                <option value="bar" {{ old('item_type') == 'bar' ? 'selected' : '' }}>Bar</option>
+                                <option value="bakery" {{ old('item_type') == 'bakery' ? 'selected' : '' }}>Bakery</option>
+                            </select>
+                            @error('item_type')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class=" col-md-4 col-sm-6 col-12 mb-3">
                             <label class="form-label">Price</label>
                             <input type="number" class="form-control @error('price') is-invalid @enderror"
                                 name="price" value="{{old('price')}}" placeholder="Price">

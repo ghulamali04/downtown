@@ -52,7 +52,8 @@ class MenuItemVariantController extends Controller
         MenuItemVariant::create([
             "name" => $request->input('name'),
             "menu_item_id" => $request->input('menu_item_id'),
-            "current_price" => $request->input('price')
+            "current_price" => $request->input('price'),
+            "item_type" => $request->input('item_type')
         ]);
         return redirect()->back()->with('success', 'Menu Item Variant successfully created');
     }
@@ -63,7 +64,8 @@ class MenuItemVariantController extends Controller
         $menuItem->update([
             "name" => $request->input('name'),
             "menu_item_id" => $request->input('menu_item_id'),
-            "current_price" => $request->input('price')
+            "current_price" => $request->input('price'),
+            "item_type" => $request->input('item_type')
         ]);
         return redirect()->back()->with('success', 'Menu Item Variant successfully updated');
     }
