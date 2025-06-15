@@ -358,6 +358,7 @@ try {
     console.error('Error sending test page:', error);
     showErrorMessage('Unable to send receipt to printer');
 } finally {
+    notifyBtn.innerHTML = 'Notify & Print'
     receiptBtn.innerHTML = 'Print Receipt'
     payBtn.innerHTML = 'Pay & Print Receipt'
 }
