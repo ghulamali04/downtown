@@ -255,6 +255,7 @@
         </div>
     </div>
     <div>
+        <button id="notify-btn" class="btn btn-danger">Notify & Print</button>
         <button id="test-btn" class="btn btn-primary">Print Receipt</button>
     <button id="pay-btn" class="btn btn-success">Pay & Print Receipt</button>
     </div>
@@ -266,16 +267,25 @@
 <script>
     const receiptBtn = document.getElementById('test-btn')
     const payBtn = document.getElementById('pay-btn')
+    const notifyBtn = document.getElementById('notify-btn')
         // Setup event listeners
         receiptBtn.addEventListener('click', printTestPage);
         payBtn.addEventListener('click', printTestPage2);
+
+        async function printTestPage() {
+            const c = confirm("Are you sure you want to notify kitchen/bar of order?")
+            if (c) {
+                notifyBtn.innerHTML = '<span class="mr-1">Processing...</span><i class="ri-loader-4-line ri-spin"></i>'
+            printPage('', '')
+            }
+        }
 
 
         async function printTestPage2 () {
             const c = confirm("Are you sure you want to print paid receipt?")
             if (c) {
                 payBtn.innerHTML = '<span class="mr-1">Processing...</span><i class="ri-loader-4-line ri-spin"></i>'
-            printPage('paid')
+            printPage('paid', 'final')
             }
         }
 
@@ -283,11 +293,11 @@
             const c = confirm("Are you sure you want to print unpaid receipt?")
             if (c) {
                 receiptBtn.innerHTML = '<span class="mr-1">Processing...</span><i class="ri-loader-4-line ri-spin"></i>'
-            printPage('')
+            printPage('', 'final')
             }
         }
 
-async function printPage(pay = '')
+async function printPage(pay = '', is_final = '')
 {
     //             fetch('/print/receipt', {
 //     method: 'POST',
@@ -331,7 +341,8 @@ try {
             printer: printerName,
             type: pay,
             paid_amount: paidAmount,
-            change: change
+            change: change,
+            is_final_print: is_final
         })
     });
 

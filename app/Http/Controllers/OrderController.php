@@ -561,6 +561,7 @@ class OrderController extends Controller
         $printMode = optional(SystemSetting::printMode()->first())->payload ?? 'tunnel';
         $order = Order::with('items', 'customer', 'user')->where('id', $request->order_id)->first();
         $order->is_paid = $request->type == 'paid' ? 1 : 0;
+        $order->is_final_print = $request->print_type == 'final' ? 1 : 0;
         $order->paid_amount = $request->paid_amount;
         $order->change = $request->change;
         $order->save();

@@ -22,7 +22,8 @@ class Order extends Model
         'is_paid',
         'is_bar',
         'paid_amount',
-        'change'
+        'change',
+        'is_final_print'
     ];
 
     public function items()
