@@ -144,12 +144,10 @@
                 <div style="width: 65%;">VAT/GST (5%)</div>
                 <div style="width: 35%;text-align: right;">{{ '0.00' }}</div>
             </div>
-            @if ($order->type == 'dinning')
             <div style="display: flex;justify-content: space-between;">
                 <div style="width: 65%;">Service Charge (5%)</div>
                 <div style="width: 35%;text-align: right;">{{ number_format($order->service_charges, 2) }}</div>
             </div>
-            @endif
             <div style="display: flex;justify-content: space-between;">
                 <div style="width: 65%;"><strong>GRAND TOTAL</strong></div>
                 <div style="width: 35%;text-align: right;"><strong>{{ number_format($total + $order->service_charges, 2) }}</strong></div>
